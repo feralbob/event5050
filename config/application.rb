@@ -16,6 +16,11 @@ module Event5050
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Use UUIDs as primary keys
+    config.generators do |g|
+      g.orm :active_record, primary_type: :uuid
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
