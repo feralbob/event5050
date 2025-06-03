@@ -1,0 +1,139 @@
+Generate a multitenant rails 8 webapp for running 50/50 raffles.
+
+## Core Functionality
+
+# Organization
+A user at an organization should be able to register and create a new tenant. That initial user should be the administrator of that organization. They should be functionality for them to create other users within their organization. The roles are 'admin', 'finance', 'legal', ' support'. The multitenant support should not use the tenantsubdomain.example.com pattern. Each organization should be able to create a 50/50 raffle. 
+
+# Licensing
+Each raffle requires a license. The license is granted by a jurisdiction that has a specific geographical location specified by GEOJSON. Each license may have specific requirements for the raffle to abide by... these are things such as "Ticket purchasers must be over 19", "Tickets can only be sold within the Jurisdiction", "2.35% of the total prize fund is required to be paid for the raffle license". Each license is either for a single draw at a specific time/place or may be a recurring draw based on a schedule e.g. weekly. Draws can only be created within the timeframe of the license. Each draw has a start/end datetime for when tickets for that draw can be sold.
+
+# Ticket pricing 
+Tickets for the raffle can be sold via various price tiers e.g. 1 Ticket = $5, 3 Tickets = $10
+
+# Draws
+Once a draw is closed, no more tickets can be sold for that draw and if the the raffle is a recurring series the next draw is scheduled.
+
+Each draw has a prize pool. The prize pool can consist of 1 main winner and multiple other prizes e.g. "Second place" or "Early bird - prize pack". Once a draw is closed, admins from the organization running the raffle can use a random number generator to pick an eligible ticket from the draw for each prize. If a ticket wins a prize it is ineligible to win any of the other prizes available for that draw. The main prize is typically a 50% of the revenue from the ticket sales from that draw. The remainder of the funds are held for the organization and platform fees, mandatory fees etc are taken from the remainder.
+
+Once the prizes are awarded, the winner is notified via email/sms. The funds are then dispersed to the beneficiaries.
+
+# Ticket purchasers
+An end user can create an account that can purchase tickets from any draw in the system. They should be able to log into their account and see all of the tickets that they have purchased and upcoming draws that may interest them.
+
+## Technical Stack
+- Rails 8
+- PostgreSQL with PostGIS extension
+- Multitenancy using https://github.com/erwinm/acts_as_tenant (avoid subdomain pattern)
+- UI: DaisyUI components with Hotwire/Turbo/Stimulus
+- Money handling: RubyMoney and Money-rails gem with multi-currency support
+- Recurring events: ice_cube gem
+- Real-time updates: Action Cable for draw notifications
+- Use https://github.com/panthomakos/timezone to consider timezone issues, and issues around daylight savings etc.
+- Use Stripe Connect
+- use Devise gem and Devise passkeys
+- Use things like solid_queue instead of dependencies that rely on Redis
+
+## Project Structure Requirements
+- Follow Rails 8 conventions with clear separation of tenant-specific logic
+- Use concern-based organization for shared multitenancy features
+- Separate controllers/views by user type (organization users vs ticket purchasers)
+- Implement service objects for complex business logic (draw execution, prize distribution)
+
+## Security & Compliance
+- Audit logging for all financial transactions
+- Webauthn based authentication
+- PCI compliance considerations for payment processing
+- WCAG 2.1 AA accessibility compliance
+- Email verification for all accounts
+- Use SecureRandom or a verifiable RNG system (e.g., Random.org) with a logged audit trail."
+
+## User Roles & Permissions for Organizations
+- Organization Admin: Full tenant management
+- Finance: Financial operations and reporting
+- Legal: License and compliance management
+- Support: Customer service and ticket management
+
+## Payment & Financial Management
+- Integration with Stripe Connect
+- Escrow account management for prize funds
+- Automated fee calculations and distributions
+- Refund processing for cancelled draws
+- Multi-currency support with real-time exchange rates
+
+## External Integrations
+- Stripe Connect for payment processing and fund distribution
+- Email service (specify: ActionMailer with provider like SendGrid)
+- SMS notifications (specify provider: Twilio recommended)
+- Geographic validation APIs for address verification
+
+## Implementation Priorities
+1. Core multitenancy and authentication
+2. Organization and user management
+3. License and jurisdiction system with PostGIS
+4. Basic raffle and draw creation
+5. Ticket purchasing with Stripe Connect
+6. Draw execution and winner selection
+7. Prize distribution and notifications
+8. Analytics and reporting features
+
+## Code Generation Notes
+- Generate comprehensive factories for all models
+- Include database constraints for business rules
+- Implement background jobs for time-sensitive operations
+- Add proper indexing for performance-critical queries
+- Include API documentation for any exposed endpoints
+
+## Development Guidelines
+- Background job processing
+- Caching strategy for frequently accessed data (jurisdictions, active draws)
+- Rate limiting for ticket purchases to prevent abuse
+
+## Geographic & Legal Features
+- GEOJSON-based jurisdiction mapping with PostGIS
+- License requirement validation
+- Age verification based on jurisdiction rules
+- Geographic restrictions for ticket sales
+
+## Testing & Quality
+- Comprehensive test suite (RSpec recommended)
+- Model tests with factory_bot
+- Integration tests for payment flows
+- Security testing for financial operations
+
+## Additional Features
+- Analytics dashboard for organizations
+- Fraud detection and prevention
+- Customer support integration
+- Mobile-responsive design
+- Real-time draw broadcasts
+
+## Error Handling Requirements
+- Payment failure recovery (retry logic, user notifications)
+- Draw cancellation procedures (refund processing)
+- Geographic restriction violations
+- Age verification failures
+- License expiration handling
+
+# Ticket Management
+- Random ticket numbering per draw - but human readable. Consider using UUIDv7 and foramtting that in a human friendly way.
+- Unique ticket identifiers across the system
+- Ticket reservation system (hold tickets during payment process)
+
+# Draw Workflow
+- Automated draw closure at end datetime
+- Prize pool calculation with fee deductions
+- Random number generation with audit trail
+- Winner notification and fund release workflows
+
+## Draw Mechanics
+- Each draw has a prize pool based on ticket revenue
+- One main prize (typically 50% of revenue)
+- Optional secondary prizes (e.g., Early Bird)
+- No ticket can win more than one prize in a draw
+
+# Financial Tracking
+- Platform fee structure and calculation
+- Organization fee/commission tracking
+- Tax reporting capabilities
+- Financial reconciliation and reporting tools
