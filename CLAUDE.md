@@ -16,6 +16,9 @@ Event5050 is a Rails 8.0.2 application that appears to be a 50/50 raffle event p
 # Start development server (Rails + Tailwind CSS watcher)
 bin/dev
 
+# Restart the development server
+touch tmp/restart.txt
+
 # Setup development environment
 bin/setup
 
