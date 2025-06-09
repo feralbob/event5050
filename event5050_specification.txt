@@ -46,7 +46,8 @@ An end user can create an account that can purchase tickets from any draw in the
 - PCI compliance considerations for payment processing
 - WCAG 2.1 AA accessibility compliance
 - Email verification for all accounts
-- Use SecureRandom or a verifiable RNG system (e.g., Random.org) with a logged audit trail."
+- Use SecureRandom or a verifiable RNG system (e.g., Random.org) with a logged audit trail.
+- Protect personally identifiable information (PII) at rest with encryption
 
 ## User Roles & Permissions for Organizations
 - Organization Admin: Full tenant management
@@ -96,8 +97,8 @@ An end user can create an account that can purchase tickets from any draw in the
 - Geographic restrictions for ticket sales
 
 ## Testing & Quality
-- Comprehensive test suite (RSpec recommended)
-- Model tests with factory_bot
+- Comprehensive test suite
+- Perform Test Driven Development 
 - Integration tests for payment flows
 - Security testing for financial operations
 
@@ -116,9 +117,8 @@ An end user can create an account that can purchase tickets from any draw in the
 - License expiration handling
 
 # Ticket Management
-- Random ticket numbering per draw - but human readable. Consider using UUIDv7 and foramtting that in a human friendly way.
+- Random ticket numbering per draw - but human readable. Consider using UUIDv7 and formatting that in a human friendly way.
 - Unique ticket identifiers across the system
-- Ticket reservation system (hold tickets during payment process)
 
 # Draw Workflow
 - Automated draw closure at end datetime
