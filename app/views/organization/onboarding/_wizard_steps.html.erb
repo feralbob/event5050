@@ -1,0 +1,16 @@
+<div class="flex justify-center mb-8">
+  <ul class="steps steps-horizontal">
+    <li class="step <%= past_step?(:org_user_details) ? 'step-primary' : '' %>">
+      <span class="hidden sm:inline">Account Details</span>
+      <span class="sm:hidden">Account</span>
+    </li>
+    <li class="step <%= past_step?(:organization_info) ? 'step-primary' : '' %>">
+      <span class="hidden sm:inline">Organization Info</span>
+      <span class="sm:hidden">Org</span>
+    </li>
+    <li class="step <%= past_step?(:confirmation) ? 'step-primary' : '' %>">
+      <span class="hidden sm:inline">Confirmation</span>
+      <span class="sm:hidden">Confirm</span>
+    </li>
+  </ul>
+</div>

@@ -1,22 +1,43 @@
 # TODO.md - Event5050 Implementation Plan
 
-## Phase 1: Foundation & Authentication
-- [ ] Add required gems to Gemfile (acts_as_tenant, devise, devise-passkeys, money-rails, ice_cube, timezone)
-- [ ] Install and configure Devise with passkeys support
-- [ ] Create User model with Devise
-- [ ] Implement WebAuthn/passkeys authentication
-- [ ] Add email verification to User registration
-- [ ] Create basic login/registration views using DaisyUI components
+## Current Focus: Multistep Organization Onboarding
 
-## Phase 2: Multitenancy & Organizations
-- [ ] Install and configure acts_as_tenant gem
-- [ ] Create Organization model (tenant)
-- [ ] Create OrganizationUser model with roles (admin, finance, legal, support)
-- [ ] Implement organization registration flow (creates org + first admin user)
-- [ ] Add tenant scoping to ApplicationController
-- [ ] Create organization management interface for admins
-- [ ] Implement user invitation system within organizations
-- [ ] Add role-based authorization (using Pundit or similar)
+### Phase 1: Foundation (High Priority)
+- [ ] Research existing authentication setup and check for Wicked gem
+- [ ] Install and configure required gems (Devise, acts_as_tenant, Wicked)
+- [ ] Create OrgUser model with Devise authentication
+- [ ] Create Organization model with OrgUser associations
+- [ ] Set up multitenancy with acts_as_tenant for OrgUser scope
+
+### Phase 2: Wicked Onboarding Controller (Medium Priority)
+- [ ] Create organization-scoped Wicked onboarding controller
+- [ ] Design org-specific views with DaisyUI components
+- [ ] Add role-based permissions for org users (admin, finance, legal, support)
+- [ ] Write tests for OrgUser and Organization onboarding flow
+- [ ] Add organization-specific flash messages and error handling
+
+**Onboarding Flow Steps:**
+1. **org_user_details** - Organization user registration (name, email, password)
+2. **organization_info** - Organization creation (name, description, contact info)
+3. **confirmation** - Review details and finalize
+
+**Core Models:**
+- **OrgUser:** Devise authentication, belongs to Organization, role enum, first user becomes admin
+- **Organization:** Basic info, has many OrgUsers, UUID primary key
+
+---
+
+## Future Implementation Phases
+
+## Phase 3: Geographic & Licensing System
+- [ ] Create Jurisdiction model with PostGIS geography column
+- [ ] Implement GEOJSON storage and parsing for jurisdiction boundaries
+- [ ] Create License model with requirements (age limits, fees, geographic restrictions)
+- [ ] Add License types (single draw vs recurring)
+- [ ] Create LicenseRequirement model for flexible requirement rules
+- [ ] Implement license validation service
+- [ ] Add jurisdiction management interface (admin only)
+- [ ] Create license application and approval workflow
 
 ## Phase 3: Geographic & Licensing System
 - [ ] Create Jurisdiction model with PostGIS geography column

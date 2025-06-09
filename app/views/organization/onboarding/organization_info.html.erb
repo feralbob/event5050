@@ -1,0 +1,51 @@
+<div class="container mx-auto max-w-2xl px-4">
+  <%= render 'wizard_steps' %>
+  
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl mb-6">Organization Information</h1>
+      
+      <%= form_with model: @organization, url: wizard_path, method: :put, local: true do |form| %>
+        <% if @organization.errors.any? %>
+          <div class="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold">Please fix the following errors:</h3>
+              <ul class="list-disc list-inside">
+                <% @organization.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        <% end %>
+        
+        <div class="form-control mb-4">
+          <%= form.label :name, class: "label" do %>
+            <span class="label-text">Organization Name</span>
+          <% end %>
+          <%= form.text_field :name, class: "input input-bordered w-full", required: true %>
+          <label class="label">
+            <span class="label-text-alt">This will be your organization's display name</span>
+          </label>
+        </div>
+        
+        <div class="form-control mb-6">
+          <%= form.label :description, class: "label" do %>
+            <span class="label-text">Description</span>
+          <% end %>
+          <%= form.text_area :description, class: "textarea textarea-bordered w-full", rows: 4, 
+              placeholder: "Tell us about your organization..." %>
+          <label class="label">
+            <span class="label-text-alt">Optional: Describe your organization's purpose</span>
+          </label>
+        </div>
+        
+        <div class="flex justify-between mt-6">
+          <%= link_to "Back", previous_wizard_path, class: "btn btn-ghost" %>
+          <%= form.submit "Continue", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

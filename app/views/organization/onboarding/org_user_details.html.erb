@@ -1,0 +1,69 @@
+<div class="container mx-auto max-w-2xl px-4">
+  <%= render 'wizard_steps' %>
+  
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl mb-6">Create Your Account</h1>
+      
+      <%= form_with model: @org_user, url: wizard_path, method: :put, local: true do |form| %>
+        <% if @org_user.errors.any? %>
+          <div class="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold">Please fix the following errors:</h3>
+              <ul class="list-disc list-inside">
+                <% @org_user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        <% end %>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="form-control">
+            <%= form.label :first_name, class: "label" do %>
+              <span class="label-text">First Name</span>
+            <% end %>
+            <%= form.text_field :first_name, class: "input input-bordered w-full", required: true %>
+          </div>
+          
+          <div class="form-control">
+            <%= form.label :last_name, class: "label" do %>
+              <span class="label-text">Last Name</span>
+            <% end %>
+            <%= form.text_field :last_name, class: "input input-bordered w-full", required: true %>
+          </div>
+        </div>
+        
+        <div class="form-control mb-4">
+          <%= form.label :email, class: "label" do %>
+            <span class="label-text">Email</span>
+          <% end %>
+          <%= form.email_field :email, class: "input input-bordered w-full", required: true %>
+        </div>
+        
+        <div class="form-control mb-4">
+          <%= form.label :password, class: "label" do %>
+            <span class="label-text">Password</span>
+          <% end %>
+          <%= form.password_field :password, class: "input input-bordered w-full", required: true %>
+          <label class="label">
+            <span class="label-text-alt">Minimum 6 characters</span>
+          </label>
+        </div>
+        
+        <div class="form-control mb-6">
+          <%= form.label :password_confirmation, class: "label" do %>
+            <span class="label-text">Confirm Password</span>
+          <% end %>
+          <%= form.password_field :password_confirmation, class: "input input-bordered w-full", required: true %>
+        </div>
+        
+        <div class="form-control mt-6">
+          <%= form.submit "Continue", class: "btn btn-primary btn-block" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

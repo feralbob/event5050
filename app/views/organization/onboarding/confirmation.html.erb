@@ -1,0 +1,55 @@
+<div class="container mx-auto max-w-2xl px-4">
+  <%= render 'wizard_steps' %>
+  
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl mb-6">Confirmation</h1>
+      
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Welcome to Event5050!</h2>
+        <p class="text-base-content/70 mb-6">
+          Your account and organization have been successfully created. Here's a summary of your information:
+        </p>
+        
+        <div class="bg-base-200 rounded-lg p-6 mb-6">
+          <h3 class="font-semibold mb-3">Account Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <span class="text-base-content/60">Name:</span>
+              <span class="ml-2 font-medium"><%= @org_user.first_name %> <%= @org_user.last_name %></span>
+            </div>
+            <div>
+              <span class="text-base-content/60">Email:</span>
+              <span class="ml-2 font-medium"><%= @org_user.email %></span>
+            </div>
+            <div>
+              <span class="text-base-content/60">Role:</span>
+              <span class="ml-2 font-medium badge badge-primary"><%= @org_user.role.humanize %></span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-base-200 rounded-lg p-6">
+          <h3 class="font-semibold mb-3">Organization Details</h3>
+          <div>
+            <span class="text-base-content/60">Name:</span>
+            <span class="ml-2 font-medium"><%= @organization.name %></span>
+          </div>
+          <% if @organization.description.present? %>
+            <div class="mt-2">
+              <span class="text-base-content/60">Description:</span>
+              <p class="mt-1 text-sm"><%= @organization.description %></p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <%= form_with url: wizard_path, method: :put, local: true do |form| %>
+        <div class="flex justify-between mt-6">
+          <%= link_to "Back", previous_wizard_path, class: "btn btn-ghost" %>
+          <%= form.submit "Get Started", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
