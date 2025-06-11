@@ -7,6 +7,9 @@ class License < ApplicationRecord
   validates :expires_at, presence: true
   validate :expires_at_after_issued_at
   
+  # Enums
+  enum :license_type, { single: 0, recurring: 1 }
+  
   def active?
     return false unless issued_at && expires_at
     current_date = Date.current

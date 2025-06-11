@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_11_012525) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_11_015712) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -21,11 +21,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_012525) do
     t.date "draw_date"
     t.datetime "ticket_sales_start_at"
     t.datetime "ticket_sales_end_at"
-    t.string "status"
     t.integer "total_revenue_cents"
     t.jsonb "prize_pool"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.index ["raffle_id"], name: "index_draws_on_raffle_id"
   end
 
@@ -44,12 +44,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_012525) do
     t.string "license_number"
     t.date "issued_at"
     t.date "expires_at"
-    t.string "license_type"
     t.date "event_date"
     t.string "recurrence_rule"
     t.jsonb "requirements"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "license_type"
     t.index ["jurisdiction_id"], name: "index_licenses_on_jurisdiction_id"
     t.index ["license_number"], name: "index_licenses_on_license_number", unique: true
     t.index ["organization_id"], name: "index_licenses_on_organization_id"
@@ -85,12 +85,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_012525) do
     t.bigint "license_id", null: false
     t.string "name"
     t.text "description"
-    t.string "status"
     t.boolean "recurring"
     t.string "recurrence_rule"
     t.jsonb "ticket_pricing"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.index ["license_id"], name: "index_raffles_on_license_id"
     t.index ["organization_id"], name: "index_raffles_on_organization_id"
   end
@@ -110,11 +110,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_012525) do
     t.bigint "ticket_purchaser_id", null: false
     t.string "ticket_number"
     t.integer "price_cents"
-    t.string "status"
     t.string "prize_won"
     t.jsonb "purchase_metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.index ["draw_id"], name: "index_tickets_on_draw_id"
     t.index ["ticket_number"], name: "index_tickets_on_ticket_number", unique: true
     t.index ["ticket_purchaser_id"], name: "index_tickets_on_ticket_purchaser_id"

@@ -14,7 +14,7 @@ class LicenseDashboard < Administrate::BaseDashboard
     issued_at: Field::Date,
     jurisdiction: Field::BelongsTo,
     license_number: Field::String,
-    license_type: Field::String,
+    license_type: Field::Select.with_options(collection: License.license_types.keys),
     organization: Field::BelongsTo,
     recurrence_rule: Field::String,
     requirements: Field::String.with_options(searchable: false),

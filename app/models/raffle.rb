@@ -7,8 +7,10 @@ class Raffle < ApplicationRecord
   
   validates :name, presence: true
   
+  # Enums
+  enum :status, { draft: 0, active: 1, inactive: 2 }, default: :draft
+  
   # Default values
-  attribute :status, :string, default: 'draft'
   attribute :recurring, :boolean, default: false
   attribute :ticket_pricing, :jsonb, default: []
 end

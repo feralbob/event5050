@@ -7,15 +7,17 @@ class Draw < ApplicationRecord
   validates :ticket_sales_end_at, presence: true
   validate :validate_date_sequence
   
+  # Enums
+  enum :status, { scheduled: 0, active: 1, closed: 2, drawn: 3 }, default: :scheduled
+  
   # Default values
-  attribute :status, :string, default: 'scheduled'
   attribute :total_revenue_cents, :integer, default: 0
   attribute :prize_pool, :jsonb, default: {}
   
   def ticket_sales_open?
     return false unless ticket_sales_start_at && ticket_sales_end_at
     current_time = Time.current
-    current_time >= ticket_sales_start_at && current_time <= ticket_sales_end_at && status == 'active'
+    current_time >= ticket_sales_start_at && current_time <= ticket_sales_end_at && active?
   end
   
   private

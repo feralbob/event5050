@@ -16,7 +16,7 @@ class RaffleDashboard < Administrate::BaseDashboard
     organization: Field::BelongsTo,
     recurrence_rule: Field::String,
     recurring: Field::Boolean,
-    status: Field::String,
+    status: Field::Select.with_options(collection: Raffle.statuses.keys),
     ticket_pricing: Field::String.with_options(searchable: false),
     created_at: Field::DateTime,
     updated_at: Field::DateTime,

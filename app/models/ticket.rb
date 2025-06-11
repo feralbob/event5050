@@ -6,8 +6,10 @@ class Ticket < ApplicationRecord
   validates :price_cents, presence: true
   validate :no_multiple_wins_per_draw
   
+  # Enums
+  enum :status, { active: 0, won: 1, refunded: 2 }, default: :active
+  
   # Default values
-  attribute :status, :string, default: 'active'
   attribute :purchase_metadata, :jsonb, default: {}
   
   def generate_ticket_number!
@@ -19,12 +21,12 @@ class Ticket < ApplicationRecord
   private
   
   def no_multiple_wins_per_draw
-    return unless status == 'won' && draw && ticket_purchaser
+    return unless won? && draw && ticket_purchaser
     
     existing_winner = Ticket.where(
       draw: draw,
       ticket_purchaser: ticket_purchaser,
-      status: 'won'
+      status: :won
     ).where.not(id: id).exists?
     
     if existing_winner

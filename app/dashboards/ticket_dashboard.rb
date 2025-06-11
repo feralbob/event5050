@@ -13,7 +13,7 @@ class TicketDashboard < Administrate::BaseDashboard
     price_cents: Field::Number,
     prize_won: Field::String,
     purchase_metadata: Field::String.with_options(searchable: false),
-    status: Field::String,
+    status: Field::Select.with_options(collection: Ticket.statuses.keys),
     ticket_number: Field::String,
     ticket_purchaser: Field::BelongsTo,
     created_at: Field::DateTime,

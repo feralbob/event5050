@@ -12,7 +12,7 @@ class DrawDashboard < Administrate::BaseDashboard
     draw_date: Field::Date,
     prize_pool: Field::String.with_options(searchable: false),
     raffle: Field::BelongsTo,
-    status: Field::String,
+    status: Field::Select.with_options(collection: Draw.statuses.keys),
     ticket_sales_end_at: Field::DateTime,
     ticket_sales_start_at: Field::DateTime,
     tickets: Field::HasMany,

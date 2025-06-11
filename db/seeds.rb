@@ -26,7 +26,7 @@ ActsAsTenant.without_tenant do
     license_number: "CA-2025-001",
     issued_at: Date.current,
     expires_at: Date.current + 1.year,
-    license_type: "recurring",
+    license_type: :recurring,
     recurrence_rule: "FREQ=WEEKLY;BYDAY=FR",
     requirements: {
       "minimum_age" => 21,
@@ -41,7 +41,7 @@ ActsAsTenant.without_tenant do
     license_number: "NV-2025-001",
     issued_at: Date.current,
     expires_at: Date.current + 6.months,
-    license_type: "single",
+    license_type: :single,
     event_date: Date.current + 1.month,
     requirements: {
       "minimum_age" => 18,
@@ -56,7 +56,7 @@ ActsAsTenant.without_tenant do
     license: license1,
     name: "Friday Night 50/50",
     description: "Weekly Friday night raffle to support community programs",
-    status: "active",
+    status: :active,
     recurring: true,
     recurrence_rule: "FREQ=WEEKLY;BYDAY=FR",
     ticket_pricing: [
@@ -71,7 +71,7 @@ ActsAsTenant.without_tenant do
     license: license2,
     name: "Championship Game Special",
     description: "Special one-time raffle for the championship game",
-    status: "draft",
+    status: :draft,
     recurring: false,
     ticket_pricing: [
       { "quantity" => 1, "price_cents" => 1000, "currency" => "USD" },
@@ -85,7 +85,7 @@ ActsAsTenant.without_tenant do
     draw_date: Date.current + 1.week,
     ticket_sales_start_at: Time.current,
     ticket_sales_end_at: Time.current + 6.days,
-    status: "active",
+    status: :active,
     total_revenue_cents: 0,
     prize_pool: { "main_prize" => { "percentage" => 50 } }
   )
@@ -95,7 +95,7 @@ ActsAsTenant.without_tenant do
     draw_date: Date.current + 1.month,
     ticket_sales_start_at: Time.current + 3.weeks,
     ticket_sales_end_at: Time.current + 4.weeks,
-    status: "scheduled",
+    status: :scheduled,
     total_revenue_cents: 0,
     prize_pool: { "main_prize" => { "percentage" => 50 } }
   )
@@ -123,7 +123,7 @@ ActsAsTenant.without_tenant do
     ticket_purchaser: purchaser1,
     ticket_number: "FRI-001-ABC",
     price_cents: 500,
-    status: "active",
+    status: :active,
     purchase_metadata: {
       "purchase_time" => Time.current.iso8601,
       "ip_address" => "192.168.1.100"
@@ -135,7 +135,7 @@ ActsAsTenant.without_tenant do
     ticket_purchaser: purchaser2,
     ticket_number: "FRI-002-DEF", 
     price_cents: 1000,
-    status: "active",
+    status: :active,
     purchase_metadata: {
       "purchase_time" => Time.current.iso8601,
       "ip_address" => "192.168.1.101"

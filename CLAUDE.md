@@ -87,3 +87,7 @@ When adding UI components:
 - Follow Stimulus conventions for JavaScript behavior
 - Place Stimulus controllers in `app/javascript/controllers/`
 - Tailwind classes are available throughout the application
+
+## Memory
+
+- When adding things like statuses used enums not strings
