@@ -14,8 +14,12 @@ class Ticket < ApplicationRecord
   
   def generate_ticket_number!
     # Generate a human-readable ticket number like ABC-123-XYZ
-    chars = ('A'..'Z').to_a + ('0'..'9').to_a
-    self.ticket_number = 3.times.map { chars.sample(3).join }.join('-')
+    # Keep generating until we find a unique one
+    loop do
+      chars = ('A'..'Z').to_a + ('0'..'9').to_a
+      self.ticket_number = 3.times.map { chars.sample(3).join }.join('-')
+      break unless Ticket.exists?(ticket_number: self.ticket_number)
+    end
   end
   
   private

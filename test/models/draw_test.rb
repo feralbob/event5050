@@ -169,4 +169,73 @@ class DrawTest < ActiveSupport::TestCase
     )
     assert_not closed_draw.ticket_sales_open?
   end
+
+  test "should calculate prize pool based on total revenue" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue_cents: 10000 # $100
+    )
+    
+    draw.calculate_prize_pool!
+    
+    assert_equal 5000, draw.prize_pool["main_prize_cents"] # 50% = $50
+    assert_equal 5000, draw.prize_pool["organization_revenue_cents"] # 50% = $50
+  end
+
+  test "should update status to active when sales start" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: 1.minute.ago,
+      ticket_sales_end_at: 1.hour.from_now,
+      status: :scheduled
+    )
+    
+    draw.check_and_update_status!
+    assert draw.active?
+  end
+
+  test "should update status to closed when sales end" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today,
+      ticket_sales_start_at: 2.hours.ago,
+      ticket_sales_end_at: 1.minute.ago,
+      status: :active
+    )
+    
+    draw.check_and_update_status!
+    assert draw.closed?
+  end
+
+  test "should have active draws scope" do
+    active_draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: 1.hour.ago,
+      ticket_sales_end_at: 1.hour.from_now,
+      status: :active
+    )
+    
+    assert_includes Draw.active_for_purchase, active_draw
+  end
+
+  test "should increment revenue when ticket purchased" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue_cents: 0
+    )
+    
+    draw.increment_revenue!(500) # $5
+    
+    assert_equal 500, draw.reload.total_revenue_cents
+  end
 end

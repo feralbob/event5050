@@ -1,0 +1,125 @@
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+  <h1 class="text-3xl font-bold mb-2"><%= @draw.raffle.name %></h1>
+  <p class="text-gray-600 mb-8"><%= @draw.raffle.description %></p>
+  
+  <% if @draw.ticket_sales_open? %>
+    <div class="card bg-base-100 shadow-xl mb-8">
+      <div class="card-body">
+        <h2 class="card-title">Draw Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-600">Draw Date</p>
+            <p class="font-semibold"><%= @draw.draw_date.strftime("%B %d, %Y") %></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Sales End</p>
+            <p class="font-semibold"><%= @draw.ticket_sales_end_at.strftime("%B %d at %I:%M %p") %></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Current Prize Pool</p>
+            <p class="font-semibold text-primary text-xl">
+              <%= number_to_currency(@draw.total_revenue_cents / 100.0) %>
+            </p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Main Prize (50%)</p>
+            <p class="font-semibold text-primary text-xl">
+              <%= number_to_currency(@draw.total_revenue_cents / 200.0) %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <%= form_with model: @ticket_purchase, url: ticket_purchases_path, 
+                  local: true, id: "new_ticket_purchase" do |form| %>
+      <%= hidden_field_tag :draw_id, @draw.id %>
+      
+      <div class="card bg-base-100 shadow-xl mb-6">
+        <div class="card-body">
+          <h2 class="card-title">Ticket Options</h2>
+          
+          <div class="form-control">
+            <label class="label cursor-pointer">
+              <%= form.radio_button :price_tier, "single", checked: true, 
+                                    class: "radio radio-primary", 
+                                    data: { quantity: 1, price: 5 } %>
+              <span class="label-text ml-2">1 Ticket - $5.00</span>
+            </label>
+          </div>
+          
+          <div class="form-control">
+            <label class="label cursor-pointer">
+              <%= form.radio_button :price_tier, "bundle3", 
+                                    class: "radio radio-primary",
+                                    data: { quantity: 3, price: 10 } %>
+              <span class="label-text ml-2">3 Tickets - $10.00 (Save $5!)</span>
+            </label>
+          </div>
+          
+          <%= form.hidden_field :quantity, value: 1 %>
+        </div>
+      </div>
+      
+      <div class="card bg-base-100 shadow-xl mb-6">
+        <div class="card-body">
+          <h2 class="card-title">Your Information</h2>
+          
+          <%= form.fields_for :ticket_purchaser_attributes do |tp| %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-control">
+                <%= tp.label :first_name, class: "label" %>
+                <%= tp.text_field :first_name, required: true, 
+                                  class: "input input-bordered" %>
+              </div>
+              
+              <div class="form-control">
+                <%= tp.label :last_name, class: "label" %>
+                <%= tp.text_field :last_name, required: true, 
+                                  class: "input input-bordered" %>
+              </div>
+              
+              <div class="form-control">
+                <%= tp.label :email, class: "label" %>
+                <%= tp.email_field :email, required: true, 
+                                   class: "input input-bordered" %>
+              </div>
+              
+              <div class="form-control">
+                <%= tp.label :phone, class: "label" %>
+                <%= tp.text_field :phone, required: true, 
+                                  class: "input input-bordered",
+                                  placeholder: "555-1234" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <div class="form-control mt-6">
+        <%= form.submit "Purchase Tickets", class: "btn btn-primary btn-block" %>
+      </div>
+    <% end %>
+    
+  <% else %>
+    <div class="alert alert-warning">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+      <span>Sales have ended for this draw.</span>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const radioButtons = document.querySelectorAll('input[name="ticket_purchase[price_tier]"]');
+  const quantityField = document.getElementById('ticket_purchase_quantity');
+  
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.checked) {
+        quantityField.value = this.dataset.quantity;
+      }
+    });
+  });
+});
+</script>

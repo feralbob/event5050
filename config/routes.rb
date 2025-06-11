@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   namespace :admin do
-      resources :draws
+      resources :draws do
+        member do
+          post :close_draw
+          post :select_winners
+        end
+      end
       resources :jurisdictions
       resources :licenses
       resources :org_users
@@ -33,6 +38,13 @@ Rails.application.routes.draw do
     
     # Dashboard (after onboarding)
     get 'dashboard', to: 'dashboard#index', as: :dashboard
+  end
+
+  # Public ticket purchasing routes
+  resources :ticket_purchases, only: [:index, :show, :create] do
+    member do
+      get 'confirmation'
+    end
   end
 
   # Defines the root path route ("/")

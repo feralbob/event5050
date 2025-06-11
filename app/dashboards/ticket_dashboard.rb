@@ -10,7 +10,11 @@ class TicketDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
     draw: Field::BelongsTo,
-    price_cents: Field::Number,
+    price_cents: Field::Number.with_options(
+      prefix: "$",
+      decimals: 2,
+      multiplier: 0.01
+    ),
     prize_won: Field::String,
     purchase_metadata: Field::String.with_options(searchable: false),
     status: Field::Select.with_options(collection: Ticket.statuses.keys),
@@ -26,9 +30,10 @@ class TicketDashboard < Administrate::BaseDashboard
   # By default, it's limited to four items to reduce clutter on index pages.
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
-    id
+    ticket_number
     draw
-    price_cents
+    ticket_purchaser
+    status
     prize_won
   ].freeze
 
@@ -75,7 +80,7 @@ class TicketDashboard < Administrate::BaseDashboard
   # Overwrite this method to customize how tickets are displayed
   # across all pages of the admin dashboard.
   #
-  # def display_resource(ticket)
-  #   "Ticket ##{ticket.id}"
-  # end
+  def display_resource(ticket)
+    ticket.ticket_number
+  end
 end

@@ -16,7 +16,11 @@ class DrawDashboard < Administrate::BaseDashboard
     ticket_sales_end_at: Field::DateTime,
     ticket_sales_start_at: Field::DateTime,
     tickets: Field::HasMany,
-    total_revenue_cents: Field::Number,
+    total_revenue_cents: Field::Number.with_options(
+      prefix: "$",
+      decimals: 2,
+      multiplier: 0.01
+    ),
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
@@ -27,10 +31,10 @@ class DrawDashboard < Administrate::BaseDashboard
   # By default, it's limited to four items to reduce clutter on index pages.
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
-    id
-    draw_date
-    prize_pool
     raffle
+    draw_date
+    status
+    total_revenue_cents
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -78,7 +82,7 @@ class DrawDashboard < Administrate::BaseDashboard
   # Overwrite this method to customize how draws are displayed
   # across all pages of the admin dashboard.
   #
-  # def display_resource(draw)
-  #   "Draw ##{draw.id}"
-  # end
+  def display_resource(draw)
+    "#{draw.raffle.name} - #{draw.draw_date}"
+  end
 end

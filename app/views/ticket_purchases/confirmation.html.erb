@@ -1,0 +1,66 @@
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+  <div class="alert alert-success mb-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    <span>Thank you for your purchase! Your tickets have been confirmed.</span>
+  </div>
+  
+  <h1 class="text-3xl font-bold mb-8">Purchase Confirmation</h1>
+  
+  <div class="card bg-base-100 shadow-xl mb-6">
+    <div class="card-body">
+      <h2 class="card-title">Purchaser Details</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600">Name</p>
+          <p class="font-semibold"><%= @ticket.ticket_purchaser.full_name %></p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Email</p>
+          <p class="font-semibold"><%= @ticket.ticket_purchaser.email %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card bg-base-100 shadow-xl mb-6">
+    <div class="card-body">
+      <h2 class="card-title">Draw Information</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600">Raffle</p>
+          <p class="font-semibold"><%= @ticket.draw.raffle.name %></p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Draw Date</p>
+          <p class="font-semibold"><%= @ticket.draw.draw_date.strftime("%B %d, %Y") %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card bg-base-100 shadow-xl mb-6">
+    <div class="card-body">
+      <h2 class="card-title">Your Ticket Numbers</h2>
+      <p class="text-sm text-gray-600 mb-4">Please save these numbers. They are your proof of purchase.</p>
+      
+      <div class="space-y-2">
+        <% @all_tickets.each do |ticket| %>
+          <div class="ticket-number bg-primary text-primary-content p-4 rounded-lg text-center font-mono text-xl">
+            <%= ticket.ticket_number %>
+          </div>
+        <% end %>
+      </div>
+      
+      <div class="mt-4">
+        <p class="text-sm text-gray-600">Total Amount</p>
+        <p class="font-semibold text-xl">
+          <%= number_to_currency(@all_tickets.sum(&:price_cents) / 100.0) %>
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mt-8">
+    <%= link_to "Purchase More Tickets", ticket_purchases_path, class: "btn btn-primary" %>
+  </div>
+</div>
