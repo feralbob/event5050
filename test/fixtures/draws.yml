@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  raffle: one
+  draw_date: <%= Date.today + 7.days %>
+  ticket_sales_start_at: <%= Time.current %>
+  ticket_sales_end_at: <%= Time.current + 6.days %>
+  status: active
+  total_revenue_cents: 0
+  prize_pool: '{"main_prize": {"percentage": 50}}'
+
+two:
+  raffle: two
+  draw_date: <%= Date.today + 14.days %>
+  ticket_sales_start_at: <%= Time.current + 7.days %>
+  ticket_sales_end_at: <%= Time.current + 13.days %>
+  status: scheduled
+  total_revenue_cents: 0
+  prize_pool: '{"main_prize": {"percentage": 50}}'

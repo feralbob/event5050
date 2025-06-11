@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  organization: one
+  jurisdiction: one
+  license_number: LIC001
+  issued_at: 2025-01-01
+  expires_at: 2025-12-31
+  license_type: recurring
+  event_date: 
+  recurrence_rule: FREQ=WEEKLY;BYDAY=FR
+  requirements: {"minimum_age": 21, "geographic_restriction": true, "license_fee_percentage": 2.5}
+
+two:
+  organization: two
+  jurisdiction: two
+  license_number: LIC002
+  issued_at: 2025-02-01
+  expires_at: 2025-02-28
+  license_type: single
+  event_date: 2025-02-14
+  recurrence_rule: 
+  requirements: {"minimum_age": 18, "geographic_restriction": false, "license_fee_percentage": 3.0}

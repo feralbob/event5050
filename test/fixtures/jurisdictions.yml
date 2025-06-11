@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: Nevada
+  boundary: POLYGON((-120 42, -120 39, -114 39, -114 42, -120 42))
+
+two:
+  name: Colorado
+  boundary: POLYGON((-109 41, -109 37, -102 37, -102 41, -109 41))

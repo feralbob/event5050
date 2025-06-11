@@ -34,6 +34,18 @@ gem "acts_as_tenant"
 # Multi-step forms
 gem "wicked"
 
+# Admin interface
+gem "administrate", "1.0.0.beta3"
+
+# Money handling
+gem "money-rails"
+
+# Recurring events
+gem "ice_cube"
+
+# Timezone handling
+gem "timezone"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

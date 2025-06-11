@@ -1,4 +1,16 @@
 Rails.application.routes.draw do
+  namespace :admin do
+      resources :draws
+      resources :jurisdictions
+      resources :licenses
+      resources :org_users
+      resources :organizations
+      resources :raffles
+      resources :tickets
+      resources :ticket_purchasers
+
+      root to: "organizations#index"
+    end
   devise_for :org_users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
