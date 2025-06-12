@@ -1,51 +1,50 @@
 class TicketPurchasesController < ApplicationController
-  before_action :set_draw, only: [:show, :create]
-  
+  before_action :set_draw, only: [ :show, :create ]
+
   def index
     @draws = Draw.active_for_purchase.includes(:raffle)
   end
-  
+
   def show
     @ticket_purchase = TicketPurchase.new
+    @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
   end
-  
+
   def create
     @ticket_purchase = TicketPurchase.new(ticket_purchase_params)
-    
+
     if @ticket_purchase.valid?
-      ActiveRecord::Base.transaction do
-        # Find or create ticket purchaser
-        ticket_purchaser = find_or_create_ticket_purchaser
-        
-        # Create tickets based on quantity
-        tickets = []
-        quantity = params[:ticket_purchase][:quantity].to_i
-        price_tier = params[:ticket_purchase][:price_tier]
-        price_cents = calculate_price_cents(price_tier)
-        
-        quantity.times do
-          ticket = @draw.tickets.build(
-            ticket_purchaser: ticket_purchaser,
-            price_cents: price_cents,
-            status: :active
-          )
-          ticket.generate_ticket_number!
-          ticket.save!
-          tickets << ticket
-        end
-        
-        # Update draw revenue
-        total_amount = price_cents * quantity
-        @draw.increment_revenue!(total_amount)
-        
-        # Redirect to confirmation for the first ticket
-        redirect_to confirmation_ticket_purchase_path(tickets.first)
+      pricing_tier = @draw.raffle.pricing_tiers.find_by(id: params[:ticket_purchase][:pricing_tier_id])
+
+      unless pricing_tier
+        @ticket_purchase.errors.add(:base, "Please select a valid ticket option")
+        @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
+        render :show and return
+      end
+
+      service = TicketPurchaseService.new(
+        draw: @draw,
+        pricing_tier: pricing_tier,
+        purchaser_attributes: params[:ticket_purchase][:ticket_purchaser_attributes].permit(
+          :first_name, :last_name, :email, :phone
+        )
+      )
+
+      result = service.purchase!
+
+      if result.success?
+        redirect_to confirmation_ticket_purchase_path(result.tickets.first)
+      else
+        @ticket_purchase.errors.add(:base, result.error)
+        @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
+        render :show
       end
     else
+      @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
       render :show
     end
   end
-  
+
   def confirmation
     @ticket = Ticket.find(params[:id])
     @all_tickets = Ticket.where(
@@ -54,49 +53,44 @@ class TicketPurchasesController < ApplicationController
       created_at: (@ticket.created_at - 1.minute)..(@ticket.created_at + 1.minute)
     )
   end
-  
+
   private
-  
+
   def set_draw
     @draw = Draw.find(params[:draw_id] || params[:id])
   end
-  
+
   def ticket_purchase_params
     params.require(:ticket_purchase).permit(
-      :quantity, 
-      :price_tier,
-      ticket_purchaser_attributes: [:first_name, :last_name, :email, :phone]
+      :pricing_tier_id,
+      ticket_purchaser_attributes: [ :first_name, :last_name, :email, :phone ]
     )
-  end
-  
-  def find_or_create_ticket_purchaser
-    attrs = params[:ticket_purchase][:ticket_purchaser_attributes]
-    TicketPurchaser.find_or_create_by(email: attrs[:email]) do |tp|
-      tp.first_name = attrs[:first_name]
-      tp.last_name = attrs[:last_name]
-      tp.phone = attrs[:phone]
-    end
-  end
-  
-  def calculate_price_cents(price_tier)
-    # For MVP, we'll use hardcoded pricing
-    # TODO: Get from raffle.ticket_pricing
-    case price_tier
-    when "single"
-      500 # $5
-    when "bundle3"
-      1000 # $10 for 3
-    else
-      500
-    end
   end
 end
 
 class TicketPurchase
   include ActiveModel::Model
-  
-  attr_accessor :quantity, :price_tier, :ticket_purchaser_attributes
-  
-  validates :quantity, presence: true, numericality: { greater_than: 0 }
-  validates :price_tier, presence: true
+
+  attr_accessor :pricing_tier_id, :ticket_purchaser_attributes
+
+  validates :pricing_tier_id, presence: true
+  validate :ticket_purchaser_attributes_valid
+
+  private
+
+  def ticket_purchaser_attributes_valid
+    return unless ticket_purchaser_attributes
+
+    if ticket_purchaser_attributes[:email].blank?
+      errors.add(:base, "Email is required")
+    end
+
+    if ticket_purchaser_attributes[:first_name].blank?
+      errors.add(:base, "First name is required")
+    end
+
+    if ticket_purchaser_attributes[:last_name].blank?
+      errors.add(:base, "Last name is required")
+    end
+  end
 end

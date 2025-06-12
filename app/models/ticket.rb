@@ -1,6 +1,7 @@
 class Ticket < ApplicationRecord
   belongs_to :draw
   belongs_to :ticket_purchaser
+  belongs_to :pricing_tier, optional: true
   
   validates :ticket_number, presence: true, uniqueness: true
   validates :price_cents, presence: true

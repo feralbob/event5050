@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+single:
+  raffle: one
+  name: Single Ticket
+  code: single
+  ticket_quantity: 1
+  total_price_cents: 500
+  display_order: 1
+  active: true
+
+bundle:
+  raffle: one
+  name: 3 Ticket Bundle
+  code: bundle3
+  ticket_quantity: 3
+  total_price_cents: 1000
+  display_order: 2
+  active: true
+  description: Save $5!
+
+inactive:
+  raffle: one
+  name: Inactive Bundle
+  code: inactive
+  ticket_quantity: 5
+  total_price_cents: 2000
+  display_order: 3
+  active: false

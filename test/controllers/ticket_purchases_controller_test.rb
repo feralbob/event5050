@@ -41,8 +41,7 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
             email: "john@example.com",
             phone: "555-1234"
           },
-          quantity: 1,
-          price_tier: "single"
+          pricing_tier_id: pricing_tiers(:single).id
         }
       }
     end
@@ -63,8 +62,7 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
             email: "jane@example.com",
             phone: "555-5678"
           },
-          quantity: 3,
-          price_tier: "bundle3"
+          pricing_tier_id: pricing_tiers(:bundle).id
         }
       }
     end
@@ -82,13 +80,12 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
           email: "bob@example.com",
           phone: "555-9999"
         },
-        quantity: 1,
-        price_tier: "single"
+        pricing_tier_id: pricing_tiers(:single).id
       }
     }
 
     @draw.reload
-    assert_equal 500, @draw.total_revenue_cents # Assuming $5 single ticket
+    assert_equal 500, @draw.total_revenue_cents # $5 single ticket
   end
 
   test "should show confirmation page with ticket numbers" do

@@ -13,6 +13,12 @@ Rails.application.routes.draw do
       resources :raffles
       resources :tickets
       resources :ticket_purchasers
+      resources :pricing_tiers do
+        member do
+          post :duplicate
+          patch :toggle_active
+        end
+      end
 
       root to: "organizations#index"
     end

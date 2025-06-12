@@ -1,6 +1,6 @@
 require "administrate/base_dashboard"
 
-class TicketDashboard < Administrate::BaseDashboard
+class PricingTierDashboard < Administrate::BaseDashboard
   # ATTRIBUTE_TYPES
   # a hash that describes the type of each of the model's fields.
   #
@@ -9,20 +9,24 @@ class TicketDashboard < Administrate::BaseDashboard
   # on pages throughout the dashboard.
   ATTRIBUTE_TYPES = {
     id: Field::Number,
-    draw: Field::BelongsTo,
-    pricing_tier: Field::BelongsTo.with_options(class_name: "PricingTier"),
-    price_cents: Field::Number.with_options(
+    raffle: Field::BelongsTo,
+    tickets: Field::HasMany,
+    name: Field::String,
+    code: Field::String,
+    ticket_quantity: Field::Number,
+    total_price_cents: Field::Number.with_options(
       prefix: "$",
-      decimals: 2,
-      multiplier: 0.01
+      suffix: "",
+      transform: ->(value) { value ? "%.2f" % (value / 100.0) : "" }
     ),
-    prize_won: Field::String,
-    purchase_metadata: Field::String.with_options(searchable: false),
-    status: Field::Select.with_options(collection: Ticket.statuses.keys),
-    ticket_number: Field::String,
-    ticket_purchaser: Field::BelongsTo,
+    display_order: Field::Number,
+    active: Field::Boolean,
+    description: Field::Text,
+    metadata: Field::Text.with_options(
+      transform: ->(value) { value ? JSON.pretty_generate(value) : "" }
+    ),
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES
@@ -31,25 +35,27 @@ class TicketDashboard < Administrate::BaseDashboard
   # By default, it's limited to four items to reduce clutter on index pages.
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
-    ticket_number
-    draw
-    pricing_tier
-    ticket_purchaser
-    status
+    raffle
+    name
+    ticket_quantity
+    total_price_cents
+    active
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
   # an array of attributes that will be displayed on the model's show page.
   SHOW_PAGE_ATTRIBUTES = %i[
     id
-    draw
-    pricing_tier
-    price_cents
-    prize_won
-    purchase_metadata
-    status
-    ticket_number
-    ticket_purchaser
+    raffle
+    name
+    code
+    ticket_quantity
+    total_price_cents
+    display_order
+    active
+    description
+    metadata
+    tickets
     created_at
     updated_at
   ].freeze
@@ -58,14 +64,14 @@ class TicketDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
-    draw
-    pricing_tier
-    price_cents
-    prize_won
-    purchase_metadata
-    status
-    ticket_number
-    ticket_purchaser
+    raffle
+    name
+    code
+    ticket_quantity
+    total_price_cents
+    display_order
+    active
+    description
   ].freeze
 
   # COLLECTION_FILTERS
@@ -78,12 +84,15 @@ class TicketDashboard < Administrate::BaseDashboard
   #   COLLECTION_FILTERS = {
   #     open: ->(resources) { resources.where(open: true) }
   #   }.freeze
-  COLLECTION_FILTERS = {}.freeze
+  COLLECTION_FILTERS = {
+    active: ->(resources) { resources.where(active: true) },
+    inactive: ->(resources) { resources.where(active: false) }
+  }.freeze
 
-  # Overwrite this method to customize how tickets are displayed
+  # Overwrite this method to customize how pricing tiers are displayed
   # across all pages of the admin dashboard.
   #
-  def display_resource(ticket)
-    ticket.ticket_number
+  def display_resource(pricing_tier)
+    "#{pricing_tier.raffle.name} - #{pricing_tier.name}"
   end
 end

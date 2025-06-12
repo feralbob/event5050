@@ -11,6 +11,7 @@ class RaffleDashboard < Administrate::BaseDashboard
     id: Field::Number,
     description: Field::Text,
     draws: Field::HasMany,
+    pricing_tiers: Field::HasMany.with_options(class_name: "PricingTier"),
     license: Field::BelongsTo,
     name: Field::String,
     organization: Field::BelongsTo,
@@ -40,6 +41,7 @@ class RaffleDashboard < Administrate::BaseDashboard
     id
     description
     draws
+    pricing_tiers
     license
     name
     organization
