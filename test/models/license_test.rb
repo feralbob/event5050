@@ -43,7 +43,7 @@ class LicenseTest < ActiveSupport::TestCase
       issued_at: Date.today,
       expires_at: Date.today + 1.year
     )
-    
+
     duplicate_license = License.new(
       organization: organization,
       jurisdiction: @jurisdiction,
@@ -51,7 +51,7 @@ class LicenseTest < ActiveSupport::TestCase
       issued_at: Date.today,
       expires_at: Date.today + 1.year
     )
-    
+
     assert_not duplicate_license.valid?
     assert_includes duplicate_license.errors[:license_number], "has already been taken"
   end
@@ -124,7 +124,7 @@ class LicenseTest < ActiveSupport::TestCase
       "geographic_restriction" => true,
       "license_fee_percentage" => 2.35
     }
-    
+
     license = License.create!(
       organization: organizations(:one),
       jurisdiction: @jurisdiction,
@@ -133,7 +133,7 @@ class LicenseTest < ActiveSupport::TestCase
       expires_at: Date.today + 1.year,
       requirements: requirements
     )
-    
+
     license.reload
     assert_equal 19, license.requirements["minimum_age"]
     assert_equal true, license.requirements["geographic_restriction"]

@@ -15,7 +15,6 @@ class TicketTest < ActiveSupport::TestCase
     ticket = Ticket.new(
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active"
     )
     assert_not ticket.valid?
@@ -26,7 +25,6 @@ class TicketTest < ActiveSupport::TestCase
     ticket = Ticket.new(
       draw: @draw,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active"
     )
     assert_not ticket.valid?
@@ -37,7 +35,6 @@ class TicketTest < ActiveSupport::TestCase
     ticket = Ticket.new(
       draw: @draw,
       ticket_purchaser: @purchaser,
-      price_cents: 500,
       status: "active"
     )
     assert_not ticket.valid?
@@ -49,31 +46,28 @@ class TicketTest < ActiveSupport::TestCase
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active"
     )
-    
+
     duplicate_ticket = Ticket.new(
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active"
     )
-    
+
     assert_not duplicate_ticket.valid?
     assert_includes duplicate_ticket.errors[:ticket_number], "has already been taken"
   end
 
-  test "should have price_cents" do
+  test "should work without price_cents when using new purchase model" do
     ticket = Ticket.new(
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
       status: "active"
     )
-    assert_not ticket.valid?
-    assert_includes ticket.errors[:price_cents], "can't be blank"
+    assert ticket.valid? # price_cents is now optional
   end
 
   test "should track status" do
@@ -81,12 +75,11 @@ class TicketTest < ActiveSupport::TestCase
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active"
     )
-    
+
     assert_equal "active", ticket.status
-    
+
     # Win the ticket
     ticket.update!(status: "won", prize_won: "main_prize")
     assert_equal "won", ticket.status
@@ -96,12 +89,11 @@ class TicketTest < ActiveSupport::TestCase
   test "should generate human-readable ticket number" do
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
-      price_cents: 500
+      ticket_purchaser: @purchaser
     )
-    
+
     ticket.generate_ticket_number!
-    
+
     assert_not_nil ticket.ticket_number
     assert_match /^[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}$/, ticket.ticket_number
   end
@@ -112,16 +104,15 @@ class TicketTest < ActiveSupport::TestCase
       "ip_address" => "192.168.1.1",
       "user_agent" => "Mozilla/5.0"
     }
-    
+
     ticket = Ticket.create!(
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active",
       purchase_metadata: metadata
     )
-    
+
     ticket.reload
     assert_equal "192.168.1.1", ticket.purchase_metadata["ip_address"]
   end
@@ -132,54 +123,61 @@ class TicketTest < ActiveSupport::TestCase
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT111111",
-      price_cents: 500,
       status: "won",
       prize_won: "main_prize"
     )
-    
+
     # Try to create second ticket for same purchaser
     ticket2 = Ticket.create!(
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT222222",
-      price_cents: 500,
       status: "active"
     )
-    
+
     # Should not be able to win again
     ticket2.status = "won"
     ticket2.prize_won = "secondary_prize"
-    
+
     assert_not ticket2.valid?
     assert_includes ticket2.errors[:base], "Purchaser has already won a prize in this draw"
   end
 
-  # Money gem integration tests
-  test "should monetize price_cents field" do
-    ticket = Ticket.new(
-      draw: @draw,
-      ticket_purchaser: @purchaser,
-      ticket_number: "TKT123456",
-      price_cents: 500,
-      status: "active"
-    )
-    
-    assert_respond_to ticket, :price
-    assert_instance_of Money, ticket.price
-    assert_equal Money.new(500, "USD"), ticket.price
-  end
 
-  test "should validate ticket price is positive" do
-    ticket = Ticket.new(
+  test "effective_price should calculate correctly from ticket_purchase" do
+    organization = organizations(:one)
+    raffle = raffles(:one)
+    ActsAsTenant.current_tenant = organization
+
+    pricing_tier = PricingTier.create!(
+      raffle: raffle,
+      name: "Bundle Deal",
+      code: "bundle",
+      ticket_quantity: 3,
+      total_price_cents: 1000,
+      currency: "USD"
+    )
+
+    ticket_purchase = TicketPurchase.create!(
       draw: @draw,
       ticket_purchaser: @purchaser,
-      ticket_number: "TKT123456",
-      price: Money.new(-100, "USD"),
-      status: "active"
+      pricing_tier: pricing_tier,
+      total_amount_cents: 1000,
+      currency: "USD",
+      purchase_date: Time.current
     )
-    
-    assert_not ticket.valid?
-    assert_includes ticket.errors[:price], "must be greater than 0"
+
+    ticket = Ticket.create!(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      pricing_tier: pricing_tier,
+      ticket_purchase: ticket_purchase,
+      ticket_number: "NEW-123-XYZ"
+    )
+
+    # Should calculate 1000 cents / 3 tickets = 333.33 cents per ticket
+    expected_price = Money.new(333, "USD")
+    assert_equal expected_price, ticket.effective_price
   end
 
   test "should inherit currency from draw/raffle" do
@@ -187,52 +185,46 @@ class TicketTest < ActiveSupport::TestCase
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price_cents: 500,
       status: "active"
     )
-    
+
     assert_equal "USD", ticket.currency
-    assert_equal "USD", ticket.price.currency.to_s
   end
 
-  test "should calculate refund amounts accurately" do
-    ticket = Ticket.create!(
+
+
+  test "should format ticket price for display from ticket_purchase" do
+    organization = organizations(:one)
+    raffle = raffles(:one)
+    ActsAsTenant.current_tenant = organization
+
+    pricing_tier = PricingTier.create!(
+      raffle: raffle,
+      name: "Single",
+      code: "single_test_#{SecureRandom.hex(4)}",
+      ticket_quantity: 1,
+      total_price_cents: 1234,
+      currency: "USD"
+    )
+
+    ticket_purchase = TicketPurchase.create!(
       draw: @draw,
       ticket_purchaser: @purchaser,
-      ticket_number: "TKT123456",
-      price: Money.new(750, "USD"),
-      status: "active"
+      pricing_tier: pricing_tier,
+      total_amount_cents: 1234,
+      currency: "USD",
+      purchase_date: Time.current
     )
-    
-    # Calculate refund amount (could be partial)
-    refund_amount = ticket.price * 0.95 # 95% refund
-    expected_refund = Money.new(713, "USD") # 95% of $7.50 = $7.13 (rounded)
-    
-    assert_equal expected_refund, refund_amount.round
-  end
 
-  test "should support multi-currency pricing" do
     ticket = Ticket.new(
       draw: @draw,
       ticket_purchaser: @purchaser,
       ticket_number: "TKT123456",
-      price: Money.new(500, "EUR"),
+      ticket_purchase: ticket_purchase,
+      pricing_tier: pricing_tier,
       status: "active"
     )
-    
-    assert_equal "EUR", ticket.price.currency.to_s
-    assert_equal Money.new(500, "EUR"), ticket.price
-  end
 
-  test "should format ticket price for display" do
-    ticket = Ticket.new(
-      draw: @draw,
-      ticket_purchaser: @purchaser,
-      ticket_number: "TKT123456",
-      price: Money.new(1234, "USD"),
-      status: "active"
-    )
-    
     assert_equal "$12.34", ticket.formatted_price
   end
 end

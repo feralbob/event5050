@@ -1,14 +1,14 @@
 class WinnerNotificationService
   Result = Struct.new(:success?, :error, :message, keyword_init: true)
-  
+
   def initialize(ticket)
     @ticket = ticket
     @draw = ticket.draw
   end
-  
+
   def call
     return Result.new(success?: false, error: "Ticket has not won a prize") unless @ticket.won?
-    
+
     # In the MVP, we'll just return success
     # In production, this would send an email/SMS
     Result.new(
@@ -16,10 +16,10 @@ class WinnerNotificationService
       message: "Notification sent successfully"
     )
   end
-  
+
   def build_notification_data
     prize_amount = calculate_prize_amount
-    
+
     {
       ticket_number: @ticket.ticket_number,
       winner_name: @ticket.ticket_purchaser.full_name,
@@ -31,12 +31,12 @@ class WinnerNotificationService
       prize_amount_formatted: format_currency(prize_amount)
     }
   end
-  
+
   private
-  
+
   def calculate_prize_amount
     return 0 unless @ticket.prize_won
-    
+
     if @ticket.prize_won == "main_prize"
       @draw.prize_pool["main_prize_cents"] || 0
     else
@@ -46,7 +46,7 @@ class WinnerNotificationService
       prize ? prize["amount_cents"] : 0
     end
   end
-  
+
   def format_prize_type
     case @ticket.prize_won
     when "main_prize"
@@ -57,7 +57,7 @@ class WinnerNotificationService
       "#{@ticket.prize_won.humanize} Winner"
     end
   end
-  
+
   def format_currency(cents)
     Money.new(cents, "USD").format
   end

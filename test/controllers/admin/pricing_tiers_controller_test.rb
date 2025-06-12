@@ -5,7 +5,7 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
     @organization = organizations(:one)
     @raffle = raffles(:one)
     @pricing_tier = pricing_tiers(:single)
-    
+
     ActsAsTenant.current_tenant = nil # Admin operates without tenant restrictions
   end
 
@@ -65,7 +65,7 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to admin_pricing_tier_url(@pricing_tier)
-    
+
     @pricing_tier.reload
     assert_equal "Updated Name", @pricing_tier.name
     assert_equal "Updated description", @pricing_tier.description
@@ -73,23 +73,23 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
 
   test "should toggle active status" do
     original_status = @pricing_tier.active
-    
+
     patch toggle_active_admin_pricing_tier_url(@pricing_tier)
-    
+
     assert_redirected_to admin_pricing_tier_url(@pricing_tier)
-    
+
     @pricing_tier.reload
     assert_equal !original_status, @pricing_tier.active
   end
 
   test "should duplicate pricing tier" do
     original_count = PricingTier.count
-    
+
     post duplicate_admin_pricing_tier_url(@pricing_tier)
-    
+
     assert_equal original_count + 1, PricingTier.count
     assert_redirected_to admin_pricing_tier_url(PricingTier.last)
-    
+
     duplicated_tier = PricingTier.last
     assert_equal "#{@pricing_tier.name} (Copy)", duplicated_tier.name
     assert_includes duplicated_tier.code, "copy"
@@ -122,7 +122,7 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
 
   test "should enforce unique code per raffle" do
     existing_tier = @pricing_tier
-    
+
     post admin_pricing_tiers_url, params: {
       pricing_tier: {
         raffle_id: existing_tier.raffle_id,
@@ -140,7 +140,7 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
   test "should filter by active status" do
     get admin_pricing_tiers_url(search: "active:")
     assert_response :success
-    
+
     get admin_pricing_tiers_url(search: "inactive:")
     assert_response :success
   end
@@ -155,7 +155,7 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
       total_price_cents: 500,
       display_order: 1
     )
-    
+
     tier2 = PricingTier.create!(
       raffle: @raffle,
       name: "Second",
@@ -167,12 +167,12 @@ class Admin::PricingTiersControllerTest < ActionDispatch::IntegrationTest
 
     get admin_pricing_tiers_url
     assert_response :success
-    
+
     # The response should contain pricing tiers in display order
     response_body = response.body
     first_pos = response_body.index(tier1.name)
     second_pos = response_body.index(tier2.name)
-    
+
     assert first_pos < second_pos, "Pricing tiers should be ordered by display_order"
   end
 end

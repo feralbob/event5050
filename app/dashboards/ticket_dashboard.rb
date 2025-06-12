@@ -22,7 +22,7 @@ class TicketDashboard < Administrate::BaseDashboard
     ticket_number: Field::String,
     ticket_purchaser: Field::BelongsTo,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

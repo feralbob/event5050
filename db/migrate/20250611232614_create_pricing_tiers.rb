@@ -10,11 +10,11 @@ class CreatePricingTiers < ActiveRecord::Migration[8.0]
       t.boolean :active, default: true
       t.string :description
       t.jsonb :metadata, default: {}
-      
+
       t.timestamps
-      
-      t.index [:raffle_id, :code], unique: true
-      t.index [:raffle_id, :active]
+
+      t.index [ :raffle_id, :code ], unique: true
+      t.index [ :raffle_id, :active ]
     end
   end
 end

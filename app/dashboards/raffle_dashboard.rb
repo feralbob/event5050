@@ -18,9 +18,8 @@ class RaffleDashboard < Administrate::BaseDashboard
     recurrence_rule: Field::String,
     recurring: Field::Boolean,
     status: Field::Select.with_options(collection: Raffle.statuses.keys),
-    ticket_pricing: Field::String.with_options(searchable: false),
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES
@@ -48,7 +47,6 @@ class RaffleDashboard < Administrate::BaseDashboard
     recurrence_rule
     recurring
     status
-    ticket_pricing
     created_at
     updated_at
   ].freeze
@@ -64,7 +62,6 @@ class RaffleDashboard < Administrate::BaseDashboard
     status
     recurring
     recurrence_rule
-    ticket_pricing
   ].freeze
 
   # COLLECTION_FILTERS

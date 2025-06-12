@@ -36,20 +36,20 @@ Rails.application.routes.draw do
   # Organization routes
   namespace :organization do
     # Onboarding wizard routes
-    resources :onboarding, only: [:show, :update], controller: 'onboarding', param: :id do
+    resources :onboarding, only: [ :show, :update ], controller: "onboarding", param: :id do
       collection do
-        get '/', to: redirect('/organization/onboarding/org_user_details')
+        get "/", to: redirect("/organization/onboarding/org_user_details")
       end
     end
-    
+
     # Dashboard (after onboarding)
-    get 'dashboard', to: 'dashboard#index', as: :dashboard
+    get "dashboard", to: "dashboard#index", as: :dashboard
   end
 
   # Public ticket purchasing routes
-  resources :ticket_purchases, only: [:index, :show, :create] do
+  resources :ticket_purchases, only: [ :index, :show, :create ] do
     member do
-      get 'confirmation'
+      get "confirmation"
     end
   end
 

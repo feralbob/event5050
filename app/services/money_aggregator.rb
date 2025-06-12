@@ -46,7 +46,7 @@ class MoneyAggregator
     result = {}
 
     grouped.each do |purchaser, tickets|
-      prices = tickets.map(&:price)
+      prices = tickets.map(&:effective_price)
       result[purchaser] = {
         total: prices.sum,
         count: tickets.count,
@@ -65,7 +65,7 @@ class MoneyAggregator
     result = {}
 
     grouped.each do |date, tickets|
-      result[date] = tickets.map(&:price).sum
+      result[date] = tickets.map(&:effective_price).sum
     end
 
     result
@@ -126,7 +126,7 @@ class MoneyAggregator
   private
 
   def extract_prices
-    items.map(&:price)
+    items.map(&:effective_price)
   end
 
   def validate_single_currency!(prices)

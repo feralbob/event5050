@@ -6,18 +6,18 @@ class TicketPurchasesController < ApplicationController
   end
 
   def show
-    @ticket_purchase = TicketPurchase.new
+    @ticket_purchase_form = TicketPurchaseForm.new
     @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
   end
 
   def create
-    @ticket_purchase = TicketPurchase.new(ticket_purchase_params)
+    @ticket_purchase_form = TicketPurchaseForm.new(ticket_purchase_params)
 
-    if @ticket_purchase.valid?
+    if @ticket_purchase_form.valid?
       pricing_tier = @draw.raffle.pricing_tiers.find_by(id: params[:ticket_purchase][:pricing_tier_id])
 
       unless pricing_tier
-        @ticket_purchase.errors.add(:base, "Please select a valid ticket option")
+        @ticket_purchase_form.errors.add(:base, "Please select a valid ticket option")
         @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
         render :show and return
       end
@@ -35,7 +35,7 @@ class TicketPurchasesController < ApplicationController
       if result.success?
         redirect_to confirmation_ticket_purchase_path(result.tickets.first)
       else
-        @ticket_purchase.errors.add(:base, result.error)
+        @ticket_purchase_form.errors.add(:base, result.error)
         @pricing_tiers = @draw.raffle.pricing_tiers.active.ordered
         render :show
       end
@@ -68,7 +68,7 @@ class TicketPurchasesController < ApplicationController
   end
 end
 
-class TicketPurchase
+class TicketPurchaseForm
   include ActiveModel::Model
 
   attr_accessor :pricing_tier_id, :ticket_purchaser_attributes

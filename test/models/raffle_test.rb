@@ -44,11 +44,11 @@ class RaffleTest < ActiveSupport::TestCase
       name: "Test Raffle",
       description: "Test Description"
     )
-    
+
     # Create a second organization and its license
     org2 = organizations(:two)
     license2 = licenses(:two)
-    
+
     # Should be able to create raffle with same name in different organization
     raffle2 = Raffle.new(
       organization: org2,
@@ -56,29 +56,8 @@ class RaffleTest < ActiveSupport::TestCase
       name: "Test Raffle",
       description: "Test Description"
     )
-    
-    assert raffle2.valid?
-  end
 
-  test "should have ticket pricing tiers" do
-    pricing = [
-      { quantity: 1, price_cents: 500, currency: "USD" },
-      { quantity: 3, price_cents: 1000, currency: "USD" },
-      { quantity: 10, price_cents: 2500, currency: "USD" }
-    ]
-    
-    raffle = Raffle.create!(
-      organization: @organization,
-      license: @license,
-      name: "Test Raffle",
-      description: "Test Description",
-      ticket_pricing: pricing
-    )
-    
-    raffle.reload
-    assert_equal 3, raffle.ticket_pricing.length
-    assert_equal 500, raffle.ticket_pricing[0]["price_cents"]
-    assert_equal 3, raffle.ticket_pricing[1]["quantity"]
+    assert raffle2.valid?
   end
 
   test "should track status" do
@@ -89,9 +68,9 @@ class RaffleTest < ActiveSupport::TestCase
       description: "Test Description",
       status: "draft"
     )
-    
+
     assert_equal "draft", raffle.status
-    
+
     # Update status
     raffle.update!(status: "active")
     assert_equal "active", raffle.status
@@ -106,7 +85,7 @@ class RaffleTest < ActiveSupport::TestCase
       recurring: true,
       recurrence_rule: "FREQ=WEEKLY;BYDAY=FR"
     )
-    
+
     assert raffle.recurring?
     assert_not_nil raffle.recurrence_rule
   end

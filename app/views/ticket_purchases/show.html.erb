@@ -31,8 +31,8 @@
       </div>
     </div>
     
-    <%= form_with model: @ticket_purchase, url: ticket_purchases_path, 
-                  local: true, id: "new_ticket_purchase" do |form| %>
+    <%= form_with model: @ticket_purchase_form, url: ticket_purchases_path, 
+                  local: true, id: "new_ticket_purchase", scope: :ticket_purchase do |form| %>
       <%= hidden_field_tag :draw_id, @draw.id %>
       
       <div class="card bg-base-100 shadow-xl mb-6">

@@ -17,21 +17,21 @@ MoneyRails.configure do |config|
   config.include_validations = true
 
   # Default ActiveRecord migration configuration values for columns:
-  config.amount_column = { prefix: '',
-                           postfix: '_cents',
+  config.amount_column = { prefix: "",
+                           postfix: "_cents",
                            column_name: nil,
                            type: :integer,
                            present: true,
                            null: false,
                            default: 0 }
 
-  config.currency_column = { prefix: '',
-                             postfix: '_currency',
+  config.currency_column = { prefix: "",
+                             postfix: "_currency",
                              column_name: nil,
                              type: :string,
                              present: true,
                              null: false,
-                             default: 'USD' }
+                             default: "USD" }
 
   # Register a custom currency
   # Example:

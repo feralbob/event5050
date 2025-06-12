@@ -19,7 +19,7 @@ class LicenseDashboard < Administrate::BaseDashboard
     recurrence_rule: Field::String,
     requirements: Field::String.with_options(searchable: false),
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

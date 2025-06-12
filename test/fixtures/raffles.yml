@@ -8,7 +8,6 @@ one:
   status: active
   recurring: true
   recurrence_rule: "FREQ=WEEKLY;BYDAY=FR"
-  ticket_pricing: '[{"quantity": 1, "price_cents": 500, "currency": "USD"}, {"quantity": 3, "price_cents": 1000, "currency": "USD"}]'
 
 two:
   organization: two
@@ -17,5 +16,4 @@ two:
   description: "One-time special raffle for Valentine's Day"
   status: draft
   recurring: false
-  recurrence_rule: 
-  ticket_pricing: '[{"quantity": 1, "price_cents": 1000, "currency": "USD"}, {"quantity": 5, "price_cents": 4000, "currency": "USD"}]'
+  recurrence_rule:

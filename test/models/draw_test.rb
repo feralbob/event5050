@@ -82,17 +82,17 @@ class DrawTest < ActiveSupport::TestCase
       ticket_sales_end_at: Time.current + 6.days,
       status: "scheduled"
     )
-    
+
     assert_equal "scheduled", draw.status
-    
+
     # Transition to active
     draw.update!(status: "active")
     assert_equal "active", draw.status
-    
+
     # Transition to closed
     draw.update!(status: "closed")
     assert_equal "closed", draw.status
-    
+
     # Transition to drawn
     draw.update!(status: "drawn")
     assert_equal "drawn", draw.status
@@ -106,10 +106,10 @@ class DrawTest < ActiveSupport::TestCase
       ticket_sales_end_at: Time.current + 6.days,
       status: "scheduled"
     )
-    
+
     # Initially should be 0
     assert_equal 0, draw.total_revenue_cents
-    
+
     # After setting revenue
     draw.update!(total_revenue_cents: 50000)
     assert_equal 50000, draw.total_revenue_cents
@@ -122,7 +122,7 @@ class DrawTest < ActiveSupport::TestCase
         { "name" => "Early Bird", "amount_cents" => 5000 }
       ]
     }
-    
+
     draw = Draw.create!(
       raffle: @raffle,
       draw_date: Date.today + 1.week,
@@ -131,7 +131,7 @@ class DrawTest < ActiveSupport::TestCase
       status: "scheduled",
       prize_pool: prize_pool
     )
-    
+
     draw.reload
     assert_equal 25000, draw.prize_pool["main_prize"]["amount_cents"]
     assert_equal 50, draw.prize_pool["main_prize"]["percentage"]
@@ -148,7 +148,7 @@ class DrawTest < ActiveSupport::TestCase
       status: "scheduled"
     )
     assert_not future_draw.ticket_sales_open?
-    
+
     # Active draw - sales open
     active_draw = Draw.create!(
       raffle: @raffle,
@@ -158,7 +158,7 @@ class DrawTest < ActiveSupport::TestCase
       status: "active"
     )
     assert active_draw.ticket_sales_open?
-    
+
     # Closed draw - sales ended
     closed_draw = Draw.create!(
       raffle: @raffle,
@@ -179,9 +179,9 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue_cents: 10000 # $100
     )
-    
+
     draw.calculate_prize_pool!
-    
+
     assert_equal 5000, draw.prize_pool["main_prize_cents"] # 50% = $50
     assert_equal 5000, draw.prize_pool["organization_revenue_cents"] # 50% = $50
   end
@@ -194,7 +194,7 @@ class DrawTest < ActiveSupport::TestCase
       ticket_sales_end_at: 1.hour.from_now,
       status: :scheduled
     )
-    
+
     draw.check_and_update_status!
     assert draw.active?
   end
@@ -207,7 +207,7 @@ class DrawTest < ActiveSupport::TestCase
       ticket_sales_end_at: 1.minute.ago,
       status: :active
     )
-    
+
     draw.check_and_update_status!
     assert draw.closed?
   end
@@ -220,7 +220,7 @@ class DrawTest < ActiveSupport::TestCase
       ticket_sales_end_at: 1.hour.from_now,
       status: :active
     )
-    
+
     assert_includes Draw.active_for_purchase, active_draw
   end
 
@@ -233,9 +233,9 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue_cents: 0
     )
-    
+
     draw.increment_revenue!(500) # $5
-    
+
     assert_equal 500, draw.reload.total_revenue_cents
   end
 
@@ -249,7 +249,7 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue_cents: 5000
     )
-    
+
     assert_respond_to draw, :total_revenue
     assert_instance_of Money, draw.total_revenue
     assert_equal Money.new(5000, "USD"), draw.total_revenue
@@ -264,11 +264,11 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue: Money.new(0, "USD")
     )
-    
+
     # Add revenue using Money objects
     ticket_price = Money.new(750, "USD") # $7.50
     draw.increment_revenue!(ticket_price)
-    
+
     assert_equal Money.new(750, "USD"), draw.reload.total_revenue
   end
 
@@ -281,12 +281,12 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue: Money.new(10000, "USD") # $100.00
     )
-    
+
     draw.calculate_prize_pool!
-    
+
     main_prize = Money.new(5000, "USD") # 50% = $50.00
     organization_revenue = Money.new(5000, "USD") # 50% = $50.00
-    
+
     assert_equal main_prize.cents, draw.prize_pool["main_prize_cents"]
     assert_equal organization_revenue.cents, draw.prize_pool["organization_revenue_cents"]
   end
@@ -300,20 +300,20 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue: Money.new(10000, "USD") # $100.00
     )
-    
+
     # Should eventually include platform fees, license fees, etc.
     platform_fee_rate = 0.025 # 2.5%
     license_fee_rate = 0.0235 # 2.35% (from specification)
-    
+
     total_fees = draw.total_revenue * (platform_fee_rate + license_fee_rate)
     net_revenue = draw.total_revenue - total_fees
     main_prize = net_revenue * 0.5
-    
+
     # For now, just test the concept - implementation will come with FeeCalculator
     expected_total_fees = Money.new(485, "USD") # 4.85% of $100 = $4.85
     expected_net_revenue = Money.new(9515, "USD") # $100 - $4.85 = $95.15
     expected_main_prize = Money.new(4758, "USD") # 50% of $95.15 = $47.58 (rounded)
-    
+
     assert_equal expected_total_fees, total_fees.round
     assert_equal expected_net_revenue, net_revenue.round
     assert_equal expected_main_prize, main_prize.round
@@ -328,7 +328,7 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue: Money.new(5000, "EUR")
     )
-    
+
     assert_equal "EUR", draw.total_revenue.currency.to_s
     assert_equal Money.new(5000, "EUR"), draw.total_revenue
   end
@@ -342,7 +342,7 @@ class DrawTest < ActiveSupport::TestCase
       status: "active",
       total_revenue: Money.new(12345, "USD")
     )
-    
+
     assert_equal "$123.45", draw.formatted_total_revenue
   end
 end

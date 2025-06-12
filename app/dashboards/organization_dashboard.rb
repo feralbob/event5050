@@ -14,7 +14,7 @@ class OrganizationDashboard < Administrate::BaseDashboard
     org_users: Field::HasMany,
     raffles: Field::HasMany,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

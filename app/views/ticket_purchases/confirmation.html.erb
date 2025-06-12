@@ -54,7 +54,11 @@
       <div class="mt-4">
         <p class="text-sm text-gray-600">Total Amount</p>
         <p class="font-semibold text-xl">
-          <%= format_money(@all_tickets.map(&:price).sum) %>
+          <% if @ticket.ticket_purchase.present? %>
+            <%= format_money(@ticket.ticket_purchase.total_amount) %>
+          <% else %>
+            <%= format_money(@all_tickets.map(&:effective_price).sum) %>
+          <% end %>
         </p>
       </div>
     </div>

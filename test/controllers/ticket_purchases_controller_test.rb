@@ -70,7 +70,7 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
 
   test "should update draw total revenue after purchase" do
     @draw.update!(total_revenue_cents: 0)
-    
+
     post ticket_purchases_url, params: {
       draw_id: @draw.id,
       ticket_purchase: {

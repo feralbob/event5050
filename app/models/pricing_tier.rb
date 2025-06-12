@@ -1,6 +1,7 @@
 class PricingTier < ApplicationRecord
   belongs_to :raffle
   has_many :tickets, dependent: :nullify
+  has_many :ticket_purchases, dependent: :restrict_with_error
 
   # Money gem integration
   monetize :total_price_cents, with_model_currency: :currency, allow_nil: false
@@ -18,7 +19,7 @@ class PricingTier < ApplicationRecord
 
   # Default currency - can be overridden per pricing tier
   def currency
-    read_attribute(:currency) || raffle&.currency || 'USD'
+    read_attribute(:currency) || raffle&.currency || "USD"
   end
 
   def price_per_ticket_cents

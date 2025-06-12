@@ -1,7 +1,7 @@
 class TicketPurchaseService
   attr_reader :draw, :pricing_tier, :purchaser_attributes
 
-  Result = Struct.new(:success?, :tickets, :ticket_purchaser, :error, keyword_init: true)
+  Result = Struct.new(:success?, :tickets, :ticket_purchaser, :ticket_purchase, :error, keyword_init: true)
 
   def initialize(draw:, pricing_tier:, purchaser_attributes:)
     @draw = draw
@@ -16,13 +16,15 @@ class TicketPurchaseService
 
     ActiveRecord::Base.transaction do
       ticket_purchaser = find_or_create_ticket_purchaser!
-      tickets = create_tickets!(ticket_purchaser)
-      update_draw_revenue!
+      ticket_purchase = create_ticket_purchase!(ticket_purchaser)
+      tickets = create_tickets!(ticket_purchaser, ticket_purchase)
+      update_draw_revenue!(ticket_purchase)
 
       Result.new(
         success?: true,
         tickets: tickets,
         ticket_purchaser: ticket_purchaser,
+        ticket_purchase: ticket_purchase,
         error: nil
       )
     end
@@ -56,16 +58,25 @@ class TicketPurchaseService
     end
   end
 
-  def create_tickets!(ticket_purchaser)
+  def create_ticket_purchase!(ticket_purchaser)
+    TicketPurchase.create!(
+      draw: draw,
+      ticket_purchaser: ticket_purchaser,
+      pricing_tier: pricing_tier,
+      total_amount: pricing_tier.total_price,
+      currency: pricing_tier.currency,
+      purchase_date: Time.current
+    )
+  end
+
+  def create_tickets!(ticket_purchaser, ticket_purchase)
     tickets = []
-    price_per_ticket = pricing_tier.price_per_ticket
 
     pricing_tier.ticket_quantity.times do
       ticket = draw.tickets.build(
         ticket_purchaser: ticket_purchaser,
         pricing_tier: pricing_tier,
-        price: price_per_ticket,
-        currency: pricing_tier.currency,
+        ticket_purchase: ticket_purchase,
         status: :active
       )
       ticket.generate_ticket_number!
@@ -76,9 +87,9 @@ class TicketPurchaseService
     tickets
   end
 
-  def update_draw_revenue!
-    # Use Money object for precise revenue tracking
-    draw.increment_revenue!(pricing_tier.total_price)
+  def update_draw_revenue!(ticket_purchase)
+    # Use the ticket purchase total amount for precise revenue tracking
+    draw.increment_revenue!(ticket_purchase.total_amount)
   end
 
   def error_result(message)
@@ -86,6 +97,7 @@ class TicketPurchaseService
       success?: false,
       tickets: [],
       ticket_purchaser: nil,
+      ticket_purchase: nil,
       error: message
     )
   end

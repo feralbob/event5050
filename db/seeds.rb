@@ -11,7 +11,7 @@ ActsAsTenant.without_tenant do
   )
 
   nevada = Jurisdiction.find_or_create_by!(
-    name: "Nevada", 
+    name: "Nevada",
     boundary: "POLYGON((-120.0 42.0, -120.0 35.0, -114.0 35.0, -114.0 42.0, -120.0 42.0))"
   )
 
@@ -113,16 +113,54 @@ ActsAsTenant.without_tenant do
     email: "jane.smith@example.com"
   ) do |tp|
     tp.first_name = "Jane"
-    tp.last_name = "Smith" 
+    tp.last_name = "Smith"
     tp.phone = "555-0456"
   end
 
   # Create some tickets
+  # Create pricing tiers if they don't exist
+  single_tier = raffle1.pricing_tiers.find_or_create_by!(code: "single") do |pt|
+    pt.name = "Single Ticket"
+    pt.ticket_quantity = 1
+    pt.total_price_cents = 500
+    pt.display_order = 1
+    pt.active = true
+  end
+
+  bundle_tier = raffle1.pricing_tiers.find_or_create_by!(code: "bundle_3") do |pt|
+    pt.name = "3 Ticket Bundle"
+    pt.ticket_quantity = 3
+    pt.total_price_cents = 1000
+    pt.display_order = 2
+    pt.active = true
+  end
+
+  purchase1 = TicketPurchase.find_or_create_by!(
+    draw: draw1,
+    ticket_purchaser: purchaser1
+  ) do |tp|
+    tp.pricing_tier = single_tier
+    tp.total_amount_cents = 500
+    tp.currency = "USD"
+    tp.purchase_date = Time.current
+  end
+
+  purchase2 = TicketPurchase.find_or_create_by!(
+    draw: draw1,
+    ticket_purchaser: purchaser2
+  ) do |tp|
+    tp.pricing_tier = bundle_tier
+    tp.total_amount_cents = 1000
+    tp.currency = "USD"
+    tp.purchase_date = Time.current
+  end
+
   ticket1 = Ticket.find_or_create_by!(
     draw: draw1,
     ticket_purchaser: purchaser1,
     ticket_number: "FRI-001-ABC",
-    price_cents: 500,
+    ticket_purchase: purchase1,
+    pricing_tier: purchase1.pricing_tier,
     status: :active,
     purchase_metadata: {
       "purchase_time" => Time.current.iso8601,
@@ -133,8 +171,9 @@ ActsAsTenant.without_tenant do
   ticket2 = Ticket.find_or_create_by!(
     draw: draw1,
     ticket_purchaser: purchaser2,
-    ticket_number: "FRI-002-DEF", 
-    price_cents: 1000,
+    ticket_number: "FRI-002-DEF",
+    ticket_purchase: purchase2,
+    pricing_tier: purchase2.pricing_tier,
     status: :active,
     purchase_metadata: {
       "purchase_time" => Time.current.iso8601,

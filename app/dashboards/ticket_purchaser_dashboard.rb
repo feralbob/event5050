@@ -15,7 +15,7 @@ class TicketPurchaserDashboard < Administrate::BaseDashboard
     phone: Field::String,
     tickets: Field::HasMany,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

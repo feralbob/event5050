@@ -59,7 +59,7 @@ class TicketPurchaserTest < ActiveSupport::TestCase
       email: "john.doe@example.com",
       phone: "555-1234"
     )
-    
+
     assert_respond_to purchaser, :tickets
   end
 
@@ -70,7 +70,7 @@ class TicketPurchaserTest < ActiveSupport::TestCase
       email: "john.doe@example.com",
       phone: "555-1234"
     )
-    
+
     assert_equal "John Doe", purchaser.full_name
   end
 

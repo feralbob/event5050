@@ -4,7 +4,6 @@ one:
   draw: one
   ticket_purchaser: one
   ticket_number: ABC-123-XYZ
-  price_cents: 500
   status: active
   prize_won: 
   purchase_metadata: '{}'
@@ -13,7 +12,6 @@ two:
   draw: two
   ticket_purchaser: two
   ticket_number: DEF-456-UVW
-  price_cents: 1000
   status: active
   prize_won: 
   purchase_metadata: '{}'
