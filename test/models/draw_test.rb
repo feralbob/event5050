@@ -238,4 +238,111 @@ class DrawTest < ActiveSupport::TestCase
     
     assert_equal 500, draw.reload.total_revenue_cents
   end
+
+  # Money gem integration tests
+  test "should monetize total_revenue_cents field" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue_cents: 5000
+    )
+    
+    assert_respond_to draw, :total_revenue
+    assert_instance_of Money, draw.total_revenue
+    assert_equal Money.new(5000, "USD"), draw.total_revenue
+  end
+
+  test "should track revenue updates with Money precision" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue: Money.new(0, "USD")
+    )
+    
+    # Add revenue using Money objects
+    ticket_price = Money.new(750, "USD") # $7.50
+    draw.increment_revenue!(ticket_price)
+    
+    assert_equal Money.new(750, "USD"), draw.reload.total_revenue
+  end
+
+  test "should calculate prize pool with Money precision" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue: Money.new(10000, "USD") # $100.00
+    )
+    
+    draw.calculate_prize_pool!
+    
+    main_prize = Money.new(5000, "USD") # 50% = $50.00
+    organization_revenue = Money.new(5000, "USD") # 50% = $50.00
+    
+    assert_equal main_prize.cents, draw.prize_pool["main_prize_cents"]
+    assert_equal organization_revenue.cents, draw.prize_pool["organization_revenue_cents"]
+  end
+
+  test "should handle fee deductions in prize pool calculations" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue: Money.new(10000, "USD") # $100.00
+    )
+    
+    # Should eventually include platform fees, license fees, etc.
+    platform_fee_rate = 0.025 # 2.5%
+    license_fee_rate = 0.0235 # 2.35% (from specification)
+    
+    total_fees = draw.total_revenue * (platform_fee_rate + license_fee_rate)
+    net_revenue = draw.total_revenue - total_fees
+    main_prize = net_revenue * 0.5
+    
+    # For now, just test the concept - implementation will come with FeeCalculator
+    expected_total_fees = Money.new(485, "USD") # 4.85% of $100 = $4.85
+    expected_net_revenue = Money.new(9515, "USD") # $100 - $4.85 = $95.15
+    expected_main_prize = Money.new(4758, "USD") # 50% of $95.15 = $47.58 (rounded)
+    
+    assert_equal expected_total_fees, total_fees.round
+    assert_equal expected_net_revenue, net_revenue.round
+    assert_equal expected_main_prize, main_prize.round
+  end
+
+  test "should support multi-currency revenue tracking" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue: Money.new(5000, "EUR")
+    )
+    
+    assert_equal "EUR", draw.total_revenue.currency.to_s
+    assert_equal Money.new(5000, "EUR"), draw.total_revenue
+  end
+
+  test "should format revenue for display" do
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue: Money.new(12345, "USD")
+    )
+    
+    assert_equal "$123.45", draw.formatted_total_revenue
+  end
 end

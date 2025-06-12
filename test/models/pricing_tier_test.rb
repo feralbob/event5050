@@ -187,4 +187,78 @@ class PricingTierTest < ActiveSupport::TestCase
     assert_equal "3 Ticket Bundle - $10.00", pricing_tier.display_text
     assert_equal "3 Ticket Bundle - $10.00 (Save $5!)", pricing_tier.display_text_with_description
   end
+
+  # Money gem integration tests
+  test "should monetize total_price_cents field" do
+    pricing_tier = PricingTier.new(
+      raffle: @raffle,
+      name: "Test",
+      code: "test",
+      ticket_quantity: 1,
+      total_price_cents: 500
+    )
+    
+    assert_respond_to pricing_tier, :total_price
+    assert_instance_of Money, pricing_tier.total_price
+    assert_equal Money.new(500, "USD"), pricing_tier.total_price
+  end
+
+  test "should validate positive money amounts using Money gem" do
+    pricing_tier = PricingTier.new(
+      raffle: @raffle,
+      name: "Test",
+      code: "test",
+      ticket_quantity: 1,
+      total_price: Money.new(-100, "USD")
+    )
+    
+    assert_not pricing_tier.valid?
+    assert_includes pricing_tier.errors[:total_price], "must be greater than 0"
+  end
+
+  test "should calculate price per ticket using Money operations" do
+    pricing_tier = PricingTier.new(
+      ticket_quantity: 3,
+      total_price: Money.new(1500, "USD")
+    )
+    
+    assert_equal Money.new(500, "USD"), pricing_tier.price_per_ticket
+  end
+
+  test "should calculate savings between tiers with Money precision" do
+    single_tier = PricingTier.new(
+      ticket_quantity: 1,
+      total_price: Money.new(500, "USD")
+    )
+    
+    bundle_tier = PricingTier.new(
+      ticket_quantity: 3,
+      total_price: Money.new(1200, "USD")
+    )
+    
+    expected_savings = Money.new(300, "USD") # 3 * $5.00 - $12.00 = $3.00
+    assert_equal expected_savings, bundle_tier.savings(single_tier)
+  end
+
+  test "should format prices using Money gem formatting" do
+    pricing_tier = PricingTier.new(
+      name: "Test Bundle",
+      total_price: Money.new(1234, "USD")
+    )
+    
+    assert_equal "$12.34", pricing_tier.formatted_price
+  end
+
+  test "should handle currency conversions for multi-currency support" do
+    pricing_tier = PricingTier.new(
+      raffle: @raffle,
+      name: "Euro Test",
+      code: "euro",
+      ticket_quantity: 1,
+      total_price: Money.new(1000, "EUR")
+    )
+    
+    assert_equal "EUR", pricing_tier.total_price.currency.to_s
+    assert_equal Money.new(1000, "EUR"), pricing_tier.total_price
+  end
 end

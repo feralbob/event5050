@@ -16,8 +16,8 @@ class PricingTierDashboard < Administrate::BaseDashboard
     ticket_quantity: Field::Number,
     total_price_cents: Field::Number.with_options(
       prefix: "$",
-      suffix: "",
-      transform: ->(value) { value ? "%.2f" % (value / 100.0) : "" }
+      decimals: 2,
+      multiplier: 0.01
     ),
     display_order: Field::Number,
     active: Field::Boolean,

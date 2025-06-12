@@ -17,7 +17,7 @@
             <div class="mt-4">
               <p class="text-lg font-semibold">Current Prize Pool</p>
               <p class="text-2xl font-bold text-primary">
-                <%= number_to_currency(draw.total_revenue_cents / 100.0) %>
+                <%= format_money(draw.total_revenue) %>
               </p>
             </div>
             

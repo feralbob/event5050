@@ -54,7 +54,7 @@
       <div class="mt-4">
         <p class="text-sm text-gray-600">Total Amount</p>
         <p class="font-semibold text-xl">
-          <%= number_to_currency(@all_tickets.sum(&:price_cents) / 100.0) %>
+          <%= format_money(@all_tickets.map(&:price).sum) %>
         </p>
       </div>
     </div>

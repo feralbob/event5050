@@ -153,4 +153,86 @@ class TicketTest < ActiveSupport::TestCase
     assert_not ticket2.valid?
     assert_includes ticket2.errors[:base], "Purchaser has already won a prize in this draw"
   end
+
+  # Money gem integration tests
+  test "should monetize price_cents field" do
+    ticket = Ticket.new(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      ticket_number: "TKT123456",
+      price_cents: 500,
+      status: "active"
+    )
+    
+    assert_respond_to ticket, :price
+    assert_instance_of Money, ticket.price
+    assert_equal Money.new(500, "USD"), ticket.price
+  end
+
+  test "should validate ticket price is positive" do
+    ticket = Ticket.new(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      ticket_number: "TKT123456",
+      price: Money.new(-100, "USD"),
+      status: "active"
+    )
+    
+    assert_not ticket.valid?
+    assert_includes ticket.errors[:price], "must be greater than 0"
+  end
+
+  test "should inherit currency from draw/raffle" do
+    ticket = Ticket.new(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      ticket_number: "TKT123456",
+      price_cents: 500,
+      status: "active"
+    )
+    
+    assert_equal "USD", ticket.currency
+    assert_equal "USD", ticket.price.currency.to_s
+  end
+
+  test "should calculate refund amounts accurately" do
+    ticket = Ticket.create!(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      ticket_number: "TKT123456",
+      price: Money.new(750, "USD"),
+      status: "active"
+    )
+    
+    # Calculate refund amount (could be partial)
+    refund_amount = ticket.price * 0.95 # 95% refund
+    expected_refund = Money.new(713, "USD") # 95% of $7.50 = $7.13 (rounded)
+    
+    assert_equal expected_refund, refund_amount.round
+  end
+
+  test "should support multi-currency pricing" do
+    ticket = Ticket.new(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      ticket_number: "TKT123456",
+      price: Money.new(500, "EUR"),
+      status: "active"
+    )
+    
+    assert_equal "EUR", ticket.price.currency.to_s
+    assert_equal Money.new(500, "EUR"), ticket.price
+  end
+
+  test "should format ticket price for display" do
+    ticket = Ticket.new(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      ticket_number: "TKT123456",
+      price: Money.new(1234, "USD"),
+      status: "active"
+    )
+    
+    assert_equal "$12.34", ticket.formatted_price
+  end
 end

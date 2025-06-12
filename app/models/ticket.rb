@@ -3,8 +3,12 @@ class Ticket < ApplicationRecord
   belongs_to :ticket_purchaser
   belongs_to :pricing_tier, optional: true
   
+  # Money gem integration
+  monetize :price_cents, with_model_currency: :currency, allow_nil: false
+  
   validates :ticket_number, presence: true, uniqueness: true
   validates :price_cents, presence: true
+  validates :price, presence: true, money: { greater_than: 0 }
   validate :no_multiple_wins_per_draw
   
   # Enums
@@ -12,6 +16,15 @@ class Ticket < ApplicationRecord
   
   # Default values
   attribute :purchase_metadata, :jsonb, default: {}
+  
+  # Default currency - inherit from draw/raffle if available
+  def currency
+    read_attribute(:currency) || draw&.raffle&.currency || 'USD'
+  end
+  
+  def formatted_price
+    price.format
+  end
   
   def generate_ticket_number!
     # Generate a human-readable ticket number like ABC-123-XYZ

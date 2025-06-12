@@ -59,6 +59,6 @@ class WinnerNotificationService
   end
   
   def format_currency(cents)
-    "$%.2f" % (cents / 100.0)
+    Money.new(cents, "USD").format
   end
 end

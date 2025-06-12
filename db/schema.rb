@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_11_233313) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_12_010457) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_233313) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "status", default: 0, null: false
+    t.string "currency", default: "USD", null: false
     t.index ["raffle_id"], name: "index_draws_on_raffle_id"
   end
 
@@ -92,6 +93,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_233313) do
     t.jsonb "metadata", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "currency", default: "USD", null: false
     t.index ["raffle_id", "active"], name: "index_pricing_tiers_on_raffle_id_and_active"
     t.index ["raffle_id", "code"], name: "index_pricing_tiers_on_raffle_id_and_code", unique: true
     t.index ["raffle_id"], name: "index_pricing_tiers_on_raffle_id"
@@ -133,6 +135,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_11_233313) do
     t.datetime "updated_at", null: false
     t.integer "status", default: 0, null: false
     t.bigint "pricing_tier_id"
+    t.string "currency", default: "USD", null: false
     t.index ["draw_id"], name: "index_tickets_on_draw_id"
     t.index ["pricing_tier_id"], name: "index_tickets_on_pricing_tier_id"
     t.index ["ticket_number"], name: "index_tickets_on_ticket_number", unique: true

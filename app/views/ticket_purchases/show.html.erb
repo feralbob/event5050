@@ -18,13 +18,13 @@
           <div>
             <p class="text-sm text-gray-600">Current Prize Pool</p>
             <p class="font-semibold text-primary text-xl">
-              <%= number_to_currency(@draw.total_revenue_cents / 100.0) %>
+              <%= format_money(@draw.total_revenue) %>
             </p>
           </div>
           <div>
             <p class="text-sm text-gray-600">Main Prize (50%)</p>
             <p class="font-semibold text-primary text-xl">
-              <%= number_to_currency(@draw.total_revenue_cents / 200.0) %>
+              <%= format_money(@draw.total_revenue / 2) %>
             </p>
           </div>
         </div>
@@ -48,7 +48,7 @@
                                         class: "radio radio-primary",
                                         data: { 
                                           quantity: tier.ticket_quantity,
-                                          price: tier.total_price_cents / 100.0
+                                          price: format_money_for_input(tier.total_price)
                                         } %>
                   <span class="label-text ml-2">
                     <%= tier.display_text_with_description %>

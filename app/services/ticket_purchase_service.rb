@@ -58,13 +58,14 @@ class TicketPurchaseService
 
   def create_tickets!(ticket_purchaser)
     tickets = []
-    price_per_ticket = pricing_tier.price_per_ticket_cents
+    price_per_ticket = pricing_tier.price_per_ticket
 
     pricing_tier.ticket_quantity.times do
       ticket = draw.tickets.build(
         ticket_purchaser: ticket_purchaser,
         pricing_tier: pricing_tier,
-        price_cents: price_per_ticket,
+        price: price_per_ticket,
+        currency: pricing_tier.currency,
         status: :active
       )
       ticket.generate_ticket_number!
@@ -76,7 +77,8 @@ class TicketPurchaseService
   end
 
   def update_draw_revenue!
-    draw.increment_revenue!(pricing_tier.total_price_cents)
+    # Use Money object for precise revenue tracking
+    draw.increment_revenue!(pricing_tier.total_price)
   end
 
   def error_result(message)
