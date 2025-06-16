@@ -86,4 +86,18 @@ module MoneyHelper
 
     "#{min_formatted} - #{max_formatted}"
   end
+
+  # Format money with currency code for international display
+  def format_money_with_currency(money)
+    return Money.new(0, MoneyRails.default_currency).format if money.nil?
+    
+    "#{money.format} #{money.currency.iso_code}"
+  end
+
+  # Check if organization uses non-default currency
+  def show_currency_code?(money)
+    return false if money.nil?
+    
+    money.currency.iso_code != MoneyRails.default_currency.to_s
+  end
 end

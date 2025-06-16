@@ -1,4 +1,6 @@
 class Raffle < ApplicationRecord
+  include CurrencyValidatable
+
   belongs_to :organization
   belongs_to :license
   has_many :draws, dependent: :destroy
@@ -8,7 +10,6 @@ class Raffle < ApplicationRecord
 
   validates :name, presence: true
   validates :currency, presence: true
-  validate :validate_currency_code
 
   # Enums
   enum :status, { draft: 0, active: 1, inactive: 2 }, default: :draft
@@ -19,15 +20,5 @@ class Raffle < ApplicationRecord
 
   def currency
     super || organization&.currency
-  end
-
-  private
-
-  def validate_currency_code
-    return if currency.blank?
-
-    Money::Currency.new(currency)
-  rescue Money::Currency::UnknownCurrency
-    errors.add(:currency, "is not a valid ISO 4217 currency code")
   end
 end

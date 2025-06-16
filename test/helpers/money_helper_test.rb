@@ -154,4 +154,18 @@ class MoneyHelperTest < ActionView::TestCase
     range = format_money_range(min_money, max_money)
     assert_equal "$5.00 - $20.00", range
   end
+
+  test "should format money with currency code" do
+    money = Money.new(1000, "EUR")
+    formatted = format_money_with_currency(money)
+    assert_match /€10.00 EUR/, formatted
+  end
+
+  test "should determine if currency code should be shown" do
+    usd_money = Money.new(1000, "USD")
+    eur_money = Money.new(1000, "EUR")
+    
+    assert_not show_currency_code?(usd_money)  # USD is default
+    assert show_currency_code?(eur_money)     # EUR is not default
+  end
 end

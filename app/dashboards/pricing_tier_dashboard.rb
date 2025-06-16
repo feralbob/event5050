@@ -14,11 +14,9 @@ class PricingTierDashboard < Administrate::BaseDashboard
     name: Field::String,
     code: Field::String,
     ticket_quantity: Field::Number,
-    total_price_cents: Field::Number.with_options(
-      prefix: "$",
-      decimals: 2,
-      multiplier: 0.01
-    ),
+    total_price: MoneyField,
+    total_price_cents: Field::Number,
+    currency: Field::String,
     display_order: Field::Number,
     active: Field::Boolean,
     description: Field::Text,
@@ -38,7 +36,7 @@ class PricingTierDashboard < Administrate::BaseDashboard
     raffle
     name
     ticket_quantity
-    total_price_cents
+    total_price
     active
   ].freeze
 
@@ -50,7 +48,7 @@ class PricingTierDashboard < Administrate::BaseDashboard
     name
     code
     ticket_quantity
-    total_price_cents
+    total_price
     display_order
     active
     description

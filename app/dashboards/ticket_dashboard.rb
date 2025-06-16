@@ -11,11 +11,7 @@ class TicketDashboard < Administrate::BaseDashboard
     id: Field::Number,
     draw: Field::BelongsTo,
     pricing_tier: Field::BelongsTo.with_options(class_name: "PricingTier"),
-    price_cents: Field::Number.with_options(
-      prefix: "$",
-      decimals: 2,
-      multiplier: 0.01
-    ),
+    price: MoneyField,
     prize_won: Field::String,
     purchase_metadata: Field::String.with_options(searchable: false),
     status: Field::Select.with_options(collection: Ticket.statuses.keys),
@@ -44,7 +40,7 @@ class TicketDashboard < Administrate::BaseDashboard
     id
     draw
     pricing_tier
-    price_cents
+    price
     prize_won
     purchase_metadata
     status
@@ -60,7 +56,7 @@ class TicketDashboard < Administrate::BaseDashboard
   FORM_ATTRIBUTES = %i[
     draw
     pricing_tier
-    price_cents
+    price
     prize_won
     purchase_metadata
     status

@@ -333,19 +333,6 @@ class DrawTest < ActiveSupport::TestCase
     assert_equal Money.new(5000, "EUR"), draw.total_revenue
   end
 
-  test "should format revenue for display" do
-    draw = Draw.create!(
-      raffle: @raffle,
-      draw_date: Date.today + 1.week,
-      ticket_sales_start_at: Time.current,
-      ticket_sales_end_at: Time.current + 6.days,
-      status: "active",
-      total_revenue: Money.new(12345, "USD")
-    )
-
-    assert_equal "$123.45", draw.formatted_total_revenue
-  end
-
   # Currency inheritance tests
   test "should inherit currency from raffle by default" do
     @raffle.update!(currency: "GBP")

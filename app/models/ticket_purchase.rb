@@ -1,4 +1,7 @@
 class TicketPurchase < ApplicationRecord
+  include CurrencyValidatable
+  include CurrencyConsistencyValidatable
+
   belongs_to :draw
   belongs_to :ticket_purchaser
   belongs_to :pricing_tier
@@ -27,5 +30,15 @@ class TicketPurchase < ApplicationRecord
 
   def ticket_count
     pricing_tier.ticket_quantity
+  end
+
+  private
+
+  def validate_currency_consistency
+    return unless pricing_tier.present? && currency.present?
+    
+    if currency != pricing_tier.currency
+      errors.add(:currency, "must match pricing tier currency (#{pricing_tier.currency})")
+    end
   end
 end

@@ -53,13 +53,14 @@ class OrganizationTest < ActiveSupport::TestCase
     end
   end
 
-  test "should handle nil currency gracefully" do
+  test "should handle nil currency with validation" do
     organization = Organization.new(name: "Test Org")
     organization.currency = nil
 
-    # Should default to USD
-    assert_equal "USD", organization.currency
-    # Currency is defaulted to USD
+    # Nil is allowed at attribute level but validation prevents save
+    assert_nil organization.currency
+    assert_not organization.valid?
+    assert_includes organization.errors[:currency], "can't be blank"
   end
 
   test "should persist currency to database" do

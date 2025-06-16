@@ -22,11 +22,6 @@ class Draw < ApplicationRecord
     super || raffle&.currency
   end
 
-
-  def formatted_total_revenue
-    total_revenue&.format || "$0.00"
-  end
-
   def ticket_sales_open?
     return false unless ticket_sales_start_at && ticket_sales_end_at
     current_time = Time.current

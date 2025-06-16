@@ -139,7 +139,7 @@ class MoneyAggregator
   end
 
   def default_currency
-    "USD"
+    Money.default_currency.to_s
   end
 
   def empty_summary

@@ -16,11 +16,7 @@ class DrawDashboard < Administrate::BaseDashboard
     ticket_sales_end_at: Field::DateTime,
     ticket_sales_start_at: Field::DateTime,
     tickets: Field::HasMany,
-    total_revenue_cents: Field::Number.with_options(
-      prefix: "$",
-      decimals: 2,
-      multiplier: 0.01
-    ),
+    total_revenue: MoneyField,
     created_at: Field::DateTime,
     updated_at: Field::DateTime
   }.freeze
@@ -34,7 +30,7 @@ class DrawDashboard < Administrate::BaseDashboard
     raffle
     draw_date
     status
-    total_revenue_cents
+    total_revenue
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -48,7 +44,7 @@ class DrawDashboard < Administrate::BaseDashboard
     ticket_sales_end_at
     ticket_sales_start_at
     tickets
-    total_revenue_cents
+    total_revenue
     created_at
     updated_at
   ].freeze
@@ -64,7 +60,6 @@ class DrawDashboard < Administrate::BaseDashboard
     ticket_sales_end_at
     ticket_sales_start_at
     tickets
-    total_revenue_cents
   ].freeze
 
   # COLLECTION_FILTERS
