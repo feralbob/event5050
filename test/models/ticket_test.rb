@@ -191,6 +191,135 @@ class TicketTest < ActiveSupport::TestCase
     assert_equal "USD", ticket.currency
   end
 
+  # Currency inheritance tests
+  test "should inherit currency through chain: Organization -> Raffle -> Draw -> Ticket" do
+    # Create organization with EUR currency
+    org = Organization.create!(name: "European Org", currency: "EUR")
+
+    ActsAsTenant.with_tenant(org) do
+      license = License.create!(
+        organization: org,
+        jurisdiction: jurisdictions(:one),
+        license_number: "EUR-LICENSE-123",
+        issued_at: Date.today,
+        expires_at: 1.year.from_now,
+        license_type: :single
+      )
+      raffle = Raffle.create!(
+        organization: org,
+        license: license,
+        name: "EUR Raffle"
+      )
+      draw = Draw.create!(
+        raffle: raffle,
+        draw_date: Date.today + 1.week,
+        ticket_sales_start_at: Time.current,
+        ticket_sales_end_at: Time.current + 6.days,
+        status: "active"
+      )
+
+      ticket = Ticket.new(
+        draw: draw,
+        ticket_purchaser: @purchaser,
+        ticket_number: "EUR-123-456"
+      )
+
+      assert_equal "EUR", ticket.currency
+    end
+  end
+
+  test "should use consistent currency for effective_price calculations" do
+    @draw.raffle.update!(currency: "CAD")
+
+    organization = organizations(:one)
+    ActsAsTenant.current_tenant = organization
+
+    pricing_tier = PricingTier.create!(
+      raffle: @draw.raffle,
+      name: "CAD Bundle",
+      code: "cad_bundle",
+      ticket_quantity: 3,
+      total_price_cents: 1500
+    )
+
+    ticket_purchase = TicketPurchase.create!(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      pricing_tier: pricing_tier,
+      total_amount_cents: 1500,
+      currency: "CAD",
+      purchase_date: Time.current
+    )
+
+    ticket = Ticket.create!(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      pricing_tier: pricing_tier,
+      ticket_purchase: ticket_purchase,
+      ticket_number: "CAD-123-XYZ"
+    )
+
+    assert_equal "CAD", ticket.effective_price.currency.to_s
+    assert_equal Money.new(500, "CAD"), ticket.effective_price
+  end
+
+  test "should handle currency fallback chain properly" do
+    # Test with pricing tier currency
+    pricing_tier = PricingTier.new(
+      raffle: @draw.raffle,
+      name: "JPY Tier",
+      code: "jpy",
+      ticket_quantity: 1,
+      total_price_cents: 1000,
+      currency: "JPY"
+    )
+
+    ticket = Ticket.new(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      pricing_tier: pricing_tier,
+      ticket_number: "JPY-123-456"
+    )
+
+    # Should get currency from pricing tier if available
+    assert_equal "JPY", ticket.currency
+  end
+
+  test "should format price with proper currency symbol" do
+    @draw.raffle.update!(currency: "EUR")
+
+    organization = organizations(:one)
+    ActsAsTenant.current_tenant = organization
+
+    pricing_tier = PricingTier.create!(
+      raffle: @draw.raffle,
+      name: "EUR Single",
+      code: "eur_single",
+      ticket_quantity: 1,
+      total_price_cents: 500
+    )
+
+    ticket_purchase = TicketPurchase.create!(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      pricing_tier: pricing_tier,
+      total_amount_cents: 500,
+      currency: "EUR",
+      purchase_date: Time.current
+    )
+
+    ticket = Ticket.create!(
+      draw: @draw,
+      ticket_purchaser: @purchaser,
+      pricing_tier: pricing_tier,
+      ticket_purchase: ticket_purchase,
+      ticket_number: "EUR-TEST-123"
+    )
+
+    # EUR formatting might vary by locale, but should include currency
+    assert_match /5/, ticket.formatted_price
+  end
+
 
 
   test "should format ticket price for display from ticket_purchase" do

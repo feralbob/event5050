@@ -87,6 +87,10 @@ class FeeCalculatorTest < ActiveSupport::TestCase
 
     assert_equal "EUR", calculator.platform_fee.currency.to_s
     assert_equal "EUR", calculator.license_fee.currency.to_s
+
+    # Test that currency objects are properly handled
+    assert_instance_of Money::Currency, calculator.platform_fee.currency
+    assert_instance_of Money::Currency, calculator.license_fee.currency
   end
 
   test "should calculate net revenue after all fees" do

@@ -7,6 +7,8 @@ class Raffle < ApplicationRecord
   acts_as_tenant(:organization)
 
   validates :name, presence: true
+  validates :currency, presence: true
+  validate :validate_currency_code
 
   # Enums
   enum :status, { draft: 0, active: 1, inactive: 2 }, default: :draft
@@ -14,8 +16,18 @@ class Raffle < ApplicationRecord
   # Default values
   attribute :recurring, :boolean, default: false
 
-  # Default currency for the raffle
+
   def currency
-    "USD"
+    super || organization&.currency
+  end
+
+  private
+
+  def validate_currency_code
+    return if currency.blank?
+
+    Money::Currency.new(currency)
+  rescue Money::Currency::UnknownCurrency
+    errors.add(:currency, "is not a valid ISO 4217 currency code")
   end
 end

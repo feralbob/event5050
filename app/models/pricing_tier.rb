@@ -17,10 +17,10 @@ class PricingTier < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:display_order, :ticket_quantity) }
 
-  # Default currency - can be overridden per pricing tier
   def currency
-    read_attribute(:currency) || raffle&.currency || "USD"
+    super || raffle&.currency
   end
+
 
   def price_per_ticket_cents
     total_price_cents / ticket_quantity
@@ -54,13 +54,6 @@ class PricingTier < ApplicationRecord
   end
 
   def formatted_price
-    total_price.format
-  end
-
-  private
-
-  # Legacy method for backward compatibility
-  def formatted_price_legacy
     total_price.format
   end
 end

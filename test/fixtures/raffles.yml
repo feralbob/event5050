@@ -8,6 +8,7 @@ one:
   status: active
   recurring: true
   recurrence_rule: "FREQ=WEEKLY;BYDAY=FR"
+  currency: "USD"
 
 two:
   organization: two
@@ -17,3 +18,4 @@ two:
   status: draft
   recurring: false
   recurrence_rule:
+  currency: "USD"

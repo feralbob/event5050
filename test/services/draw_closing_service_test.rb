@@ -25,7 +25,7 @@ class DrawClosingServiceTest < ActiveSupport::TestCase
   test "should calculate final prize pool" do
     # Create some tickets to generate revenue
     pricing_tier = PricingTier.create!(
-      raffle: @raffle,
+      raffle: @draw.raffle,
       name: "Test Tier",
       code: "test",
       ticket_quantity: 1,

@@ -38,10 +38,11 @@ class Ticket < ApplicationRecord
     end
   end
 
-  # Get currency from related models
+  # Get currency from related models through inheritance chain
   def currency
-    ticket_purchase&.currency || pricing_tier&.currency || draw&.raffle&.currency || "USD"
+    ticket_purchase&.currency || pricing_tier&.currency || draw&.currency
   end
+
 
   def generate_ticket_number!
     # Generate a human-readable ticket number like ABC-123-XYZ

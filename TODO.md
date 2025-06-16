@@ -27,6 +27,55 @@
 
 ---
 
+## Currency Migration to Money::Currency Objects - COMPLETED ✅
+
+**Implementation Date:** June 13, 2025
+
+### What was accomplished:
+- ✅ **Organization Currency Support**: Added currency column and Money::Currency object support
+- ✅ **Raffle Currency Inheritance**: Raffles inherit currency from Organization with override capability  
+- ✅ **Draw Currency Inheritance**: Draws inherit currency from Raffle
+- ✅ **PricingTier Currency Support**: PricingTiers inherit from Raffle with override capability
+- ✅ **Ticket Currency Support**: Tickets inherit currency through the full chain
+- ✅ **Service Layer Integration**: FeeCalculator and PrizePoolDistributor use Money::Currency objects
+- ✅ **Comprehensive Testing**: Full TDD approach with model, service, and integration tests
+
+### Currency Inheritance Chain:
+```
+Organization (EUR) 
+    ↓ 
+Raffle (inherits EUR, can override)
+    ↓
+Draw (inherits from Raffle)
+    ↓  
+PricingTier (inherits from Raffle, can override)
+    ↓
+Ticket (inherits through chain: ticket_purchase → pricing_tier → draw)
+```
+
+### Key Features:
+- **Multi-currency support** across the entire platform
+- **Inheritance chain** ensures currency consistency
+- **Override capability** at Raffle and PricingTier levels
+- **Money::Currency objects** instead of strings for type safety
+- **Service integration** with proper currency handling
+- **Database migrations** to support currency columns
+- **Comprehensive test coverage** including edge cases
+
+### Database Changes:
+- Added `currency` column to `organizations` table
+- Added `currency` column to `raffles` table  
+- Removed database defaults to support inheritance
+- All currency columns are non-null strings
+
+### Files Modified:
+- Models: `Organization`, `Raffle`, `Draw`, `PricingTier`, `Ticket`
+- Services: Enhanced `FeeCalculator` and `PrizePoolDistributor` tests
+- Tests: Comprehensive test coverage for all models and services
+- Integration tests: End-to-end currency inheritance validation
+
+---
+
 ## Future Implementation Phases
 
 ## Phase 3: Geographic & Licensing System

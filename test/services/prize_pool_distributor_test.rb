@@ -112,6 +112,11 @@ class PrizePoolDistributorTest < ActiveSupport::TestCase
     assert_equal "EUR", distribution[:main_prize].currency.to_s
     assert_equal "EUR", distribution[:platform_fee].currency.to_s
     assert_equal "EUR", distribution[:license_fee].currency.to_s
+
+    # Test that currency objects are properly handled
+    assert_instance_of Money::Currency, distribution[:main_prize].currency
+    assert_instance_of Money::Currency, distribution[:platform_fee].currency
+    assert_instance_of Money::Currency, distribution[:license_fee].currency
   end
 
   test "should provide detailed audit trail" do

@@ -18,10 +18,10 @@ class Draw < ApplicationRecord
   attribute :total_revenue_cents, :integer, default: 0
   attribute :prize_pool, :jsonb, default: {}
 
-  # Default currency - inherit from raffle if available
   def currency
-    read_attribute(:currency) || raffle&.currency || "USD"
+    super || raffle&.currency
   end
+
 
   def formatted_total_revenue
     total_revenue&.format || "$0.00"

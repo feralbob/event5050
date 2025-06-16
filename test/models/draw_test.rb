@@ -345,4 +345,90 @@ class DrawTest < ActiveSupport::TestCase
 
     assert_equal "$123.45", draw.formatted_total_revenue
   end
+
+  # Currency inheritance tests
+  test "should inherit currency from raffle by default" do
+    @raffle.update!(currency: "GBP")
+    draw = Draw.new(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days
+    )
+
+    assert_equal "GBP", draw.currency
+  end
+
+  test "should use consistent currency for total_revenue Money object" do
+    @raffle.update!(currency: "EUR")
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue_cents: 10000
+    )
+
+    assert_equal "EUR", draw.total_revenue.currency.to_s
+    assert_equal Money.new(10000, "EUR"), draw.total_revenue
+  end
+
+  test "should inherit currency through chain: Organization -> Raffle -> Draw" do
+    # Create organization with JPY currency
+    org = Organization.create!(name: "Japanese Org", currency: "JPY")
+    license = License.create!(
+      organization: org,
+      jurisdiction: jurisdictions(:one),
+      license_number: "JPY-LICENSE-123",
+      issued_at: Date.today,
+      expires_at: 1.year.from_now,
+      license_type: :single
+    )
+    raffle = Raffle.create!(
+      organization: org,
+      license: license,
+      name: "JPY Raffle"
+    )
+
+    draw = Draw.new(
+      raffle: raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days
+    )
+
+    assert_equal "JPY", draw.currency
+    # Currency inherited correctly
+  end
+
+  test "should store currency in prize pool calculations" do
+    @raffle.update!(currency: "AUD")
+    draw = Draw.create!(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days,
+      status: "active",
+      total_revenue_cents: 20000
+    )
+
+    draw.calculate_prize_pool_with_fees!
+
+    assert_equal "AUD", draw.prize_pool["currency"]
+    assert_equal 10000, draw.prize_pool["main_prize_cents"]
+    assert_equal 10000, draw.prize_pool["organization_revenue_cents"]
+  end
+
+  test "should handle nil currency gracefully" do
+    draw = Draw.new(
+      raffle: @raffle,
+      draw_date: Date.today + 1.week,
+      ticket_sales_start_at: Time.current,
+      ticket_sales_end_at: Time.current + 6.days
+    )
+
+    # Should default to USD when raffle has no specific currency
+    assert_equal "USD", draw.currency
+  end
 end

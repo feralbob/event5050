@@ -71,7 +71,6 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
 
       ticket = other_draw.tickets.build(
         ticket_purchaser: purchaser,
-        price_cents: 500,
         status: :won,
         prize_won: "prize_#{i}"
       )

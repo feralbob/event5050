@@ -56,10 +56,21 @@ class MoneyAggregatorTest < ActiveSupport::TestCase
   end
 
   test "should handle mixed currency scenarios" do
-    # Create tickets with different currencies
+    # Create raffle with EUR currency
+    eur_raffle = Raffle.create!(organization: @organization, license: licenses(:one), name: "EUR Raffle", currency: "EUR")
+    eur_draw = Draw.create!(raffle: eur_raffle, draw_date: Date.today + 1.week, ticket_sales_start_at: Time.current, ticket_sales_end_at: Time.current + 6.days, status: "active")
+
+    # Create EUR pricing tiers
+    eur_tier1 = PricingTier.create!(raffle: eur_raffle, name: "EUR Single", code: "eur_single", ticket_quantity: 1, total_price_cents: 500, currency: "EUR")
+    eur_tier2 = PricingTier.create!(raffle: eur_raffle, name: "EUR Premium", code: "eur_premium", ticket_quantity: 1, total_price_cents: 750, currency: "EUR")
+
+    # Create EUR ticket purchases
+    eur_purchase1 = TicketPurchase.create!(draw: eur_draw, ticket_purchaser: @purchaser1, pricing_tier: eur_tier1, total_amount_cents: 500, currency: "EUR", purchase_date: Time.current)
+    eur_purchase2 = TicketPurchase.create!(draw: eur_draw, ticket_purchaser: @purchaser2, pricing_tier: eur_tier2, total_amount_cents: 750, currency: "EUR", purchase_date: Time.current)
+
     eur_tickets = [
-      Ticket.create!(draw: @draw, ticket_purchaser: @purchaser1, ticket_number: "TKT005", price: Money.new(500, "EUR")),
-      Ticket.create!(draw: @draw, ticket_purchaser: @purchaser2, ticket_number: "TKT006", price: Money.new(750, "EUR"))
+      Ticket.create!(draw: eur_draw, ticket_purchaser: @purchaser1, ticket_number: "TKT005", ticket_purchase: eur_purchase1, pricing_tier: eur_tier1),
+      Ticket.create!(draw: eur_draw, ticket_purchaser: @purchaser2, ticket_number: "TKT006", ticket_purchase: eur_purchase2, pricing_tier: eur_tier2)
     ]
 
     aggregator = MoneyAggregator.new(eur_tickets)
@@ -142,9 +153,14 @@ class MoneyAggregatorTest < ActiveSupport::TestCase
   end
 
   test "should handle single currency validation" do
-    # Mix USD and EUR tickets
+    # Create EUR ticket to mix with USD tickets
+    eur_raffle = Raffle.create!(organization: @organization, license: licenses(:one), name: "EUR Raffle", currency: "EUR")
+    eur_draw = Draw.create!(raffle: eur_raffle, draw_date: Date.today + 1.week, ticket_sales_start_at: Time.current, ticket_sales_end_at: Time.current + 6.days, status: "active")
+    eur_tier = PricingTier.create!(raffle: eur_raffle, name: "EUR Single", code: "eur_single_mix", ticket_quantity: 1, total_price_cents: 500, currency: "EUR")
+    eur_purchase = TicketPurchase.create!(draw: eur_draw, ticket_purchaser: @purchaser1, pricing_tier: eur_tier, total_amount_cents: 500, currency: "EUR", purchase_date: Time.current)
+
     mixed_tickets = @tickets + [
-      Ticket.create!(draw: @draw, ticket_purchaser: @purchaser1, ticket_number: "TKT007", price: Money.new(500, "EUR"))
+      Ticket.create!(draw: eur_draw, ticket_purchaser: @purchaser1, ticket_number: "TKT007", ticket_purchase: eur_purchase, pricing_tier: eur_tier)
     ]
 
     aggregator = MoneyAggregator.new(mixed_tickets)

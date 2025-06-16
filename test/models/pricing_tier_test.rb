@@ -261,4 +261,108 @@ class PricingTierTest < ActiveSupport::TestCase
     assert_equal "EUR", pricing_tier.total_price.currency.to_s
     assert_equal Money.new(1000, "EUR"), pricing_tier.total_price
   end
+
+  # Currency inheritance tests
+  test "should inherit currency from raffle by default" do
+    @raffle.update!(currency: "CAD")
+    pricing_tier = PricingTier.new(
+      raffle: @raffle,
+      name: "Test Tier",
+      code: "test",
+      ticket_quantity: 1,
+      total_price_cents: 500
+    )
+
+    assert_equal "CAD", pricing_tier.currency
+  end
+
+  test "should allow overriding raffle currency" do
+    @raffle.update!(currency: "USD")
+    pricing_tier = PricingTier.create!(
+      raffle: @raffle,
+      name: "Test Tier",
+      code: "test",
+      ticket_quantity: 1,
+      total_price_cents: 500,
+      currency: "EUR"
+    )
+
+    assert_equal "EUR", pricing_tier.currency
+    assert_equal "USD", @raffle.currency
+  end
+
+  test "should use consistent currency for money calculations" do
+    @raffle.update!(currency: "JPY")
+    pricing_tier = PricingTier.create!(
+      raffle: @raffle,
+      name: "Test Tier",
+      code: "test",
+      ticket_quantity: 3,
+      total_price_cents: 1500
+    )
+
+    assert_equal "JPY", pricing_tier.total_price.currency.to_s
+    assert_equal "JPY", pricing_tier.price_per_ticket.currency.to_s
+    assert_equal Money.new(500, "JPY"), pricing_tier.price_per_ticket
+  end
+
+  test "should inherit currency through chain: Organization -> Raffle -> PricingTier" do
+    # Create organization with AUD currency
+    org = Organization.create!(name: "Australian Org", currency: "AUD")
+
+    # Set the tenant for acts_as_tenant
+    ActsAsTenant.with_tenant(org) do
+      license = License.create!(
+        organization: org,
+        jurisdiction: jurisdictions(:one),
+        license_number: "AUD-LICENSE-123",
+        issued_at: Date.today,
+        expires_at: 1.year.from_now,
+        license_type: :single
+      )
+      raffle = Raffle.create!(
+        organization: org,
+        license: license,
+        name: "AUD Raffle"
+      )
+
+      # Verify raffle inherited the currency
+      assert_equal "AUD", raffle.currency
+
+      pricing_tier = PricingTier.new(
+        raffle: raffle,
+        name: "Test Tier",
+        code: "test",
+        ticket_quantity: 1,
+        total_price_cents: 1000
+      )
+
+      assert_equal "AUD", pricing_tier.currency
+      # Currency inherited correctly
+    end
+  end
+
+  test "should calculate savings with same currency" do
+    @raffle.update!(currency: "EUR")
+
+    single_tier = PricingTier.create!(
+      raffle: @raffle,
+      name: "Single",
+      code: "single",
+      ticket_quantity: 1,
+      total_price_cents: 500
+    )
+
+    bundle_tier = PricingTier.create!(
+      raffle: @raffle,
+      name: "Bundle",
+      code: "bundle",
+      ticket_quantity: 3,
+      total_price_cents: 1200
+    )
+
+    savings = bundle_tier.savings(single_tier)
+    assert_equal Money.new(300, "EUR"), savings
+    assert_equal "EUR", savings.currency.to_s
+  end
 end

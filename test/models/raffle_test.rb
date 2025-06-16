@@ -89,4 +89,79 @@ class RaffleTest < ActiveSupport::TestCase
     assert raffle.recurring?
     assert_not_nil raffle.recurrence_rule
   end
+
+  # Currency inheritance tests
+  test "should inherit currency from organization by default" do
+    # Create a fresh organization with EUR currency
+    org = Organization.create!(name: "EUR Org", currency: "EUR")
+    license = License.create!(
+      organization: org,
+      jurisdiction: jurisdictions(:one),
+      license_number: "EUR-LICENSE-123",
+      issued_at: Date.today,
+      expires_at: 1.year.from_now,
+      license_type: :single
+    )
+
+    raffle = Raffle.new(
+      organization: org,
+      license: license,
+      name: "Test Raffle"
+    )
+
+    # Debug: check what's happening
+    assert_equal "EUR", org.currency, "Organization should have EUR currency"
+    assert_equal org.id, raffle.organization_id, "Raffle should be associated with organization"
+    assert_equal "EUR", raffle.currency, "Raffle should inherit EUR from organization"
+  end
+
+  test "should allow overriding organization currency" do
+    @organization.update!(currency: "USD")
+    raffle = Raffle.create!(
+      organization: @organization,
+      license: @license,
+      name: "Test Raffle",
+      currency: "CAD"
+    )
+
+    assert_equal "CAD", raffle.currency
+    assert_equal "USD", @organization.currency
+  end
+
+  test "should validate currency is a valid ISO code" do
+    raffle = Raffle.new(
+      organization: @organization,
+      license: @license,
+      name: "Test Raffle",
+      currency: "INVALID"
+    )
+
+    assert_not raffle.valid?
+    assert_includes raffle.errors[:currency], "is not a valid ISO 4217 currency code"
+  end
+
+  test "should persist currency to database" do
+    raffle = Raffle.create!(
+      organization: @organization,
+      license: @license,
+      name: "Test Raffle",
+      currency: "JPY"
+    )
+
+    raffle.reload
+    assert_equal "JPY", raffle.currency
+    # Currency persisted successfully
+  end
+
+  test "should handle nil currency by inheriting from organization" do
+    @organization.update!(currency: "AUD")
+    raffle = Raffle.new(
+      organization: @organization,
+      license: @license,
+      name: "Test Raffle"
+    )
+    raffle.currency = nil
+
+    assert_equal "AUD", raffle.currency
+  end
 end

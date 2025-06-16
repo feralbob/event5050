@@ -8,6 +8,7 @@ one:
   status: active
   total_revenue_cents: 0
   prize_pool: '{"main_prize": {"percentage": 50}}'
+  currency: "USD"
 
 two:
   raffle: two
@@ -17,3 +18,4 @@ two:
   status: scheduled
   total_revenue_cents: 0
   prize_pool: '{"main_prize": {"percentage": 50}}'
+  currency: "USD"
