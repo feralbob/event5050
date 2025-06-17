@@ -3,7 +3,7 @@ require "administrate/field/base"
 class MoneyField < Administrate::Field::Base
   def to_s
     return "" unless data.present?
-    
+
     if data.respond_to?(:format)
       # It's already a Money object
       data.format

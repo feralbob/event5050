@@ -36,7 +36,7 @@ class TicketPurchase < ApplicationRecord
 
   def validate_currency_consistency
     return unless pricing_tier.present? && currency.present?
-    
+
     if currency != pricing_tier.currency
       errors.add(:currency, "must match pricing tier currency (#{pricing_tier.currency})")
     end

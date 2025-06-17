@@ -29,11 +29,11 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
   test "should select winner for main prize" do
     result = @service.select_winner("main_prize")
 
-    assert result.success?
+    assert result.success?, "Expected success but got: #{result.error}"
     winning_ticket = result.winner
     assert_not_nil winning_ticket
     assert @tickets.include?(winning_ticket)
-    assert_equal "won", winning_ticket.status
+    assert_equal "won", winning_ticket.reload.status
     assert_equal "main_prize", winning_ticket.prize_won
   end
 
@@ -91,8 +91,9 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
 
     result = @service.select_winner("main_prize")
 
-    assert result.success?
-    assert @tickets.last(2).include?(result.winner)
+    assert result.success?, "Expected success but got: #{result.error}"
+    assert result.winner.present?, "Expected a winner to be selected"
+    assert @tickets.last(2).include?(result.winner), "Winner should be from active tickets"
   end
 
   test "should not select winner if draw not closed" do

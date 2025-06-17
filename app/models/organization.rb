@@ -1,6 +1,6 @@
 class Organization < ApplicationRecord
   include CurrencyValidatable
-  
+
   has_many :org_users, dependent: :destroy
   has_many :licenses, dependent: :destroy
   has_many :raffles, dependent: :destroy
