@@ -5,7 +5,7 @@ class TicketPurchaseTest < ActiveSupport::TestCase
     @organization = organizations(:one)
     @raffle = raffles(:one)
     @draw = draws(:one)
-    @purchaser = ticket_purchasers(:one)
+    @customer = customers(:one)
 
     ActsAsTenant.current_tenant = @organization
 
@@ -26,7 +26,7 @@ class TicketPurchaseTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
     ticket_purchase = TicketPurchase.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: @pricing_tier,
       total_amount_cents: 1000,
       currency: "USD",
@@ -38,7 +38,7 @@ class TicketPurchaseTest < ActiveSupport::TestCase
   test "should require total_amount_cents" do
     ticket_purchase = TicketPurchase.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: @pricing_tier,
       currency: "USD",
       purchase_date: Time.current
@@ -50,7 +50,7 @@ class TicketPurchaseTest < ActiveSupport::TestCase
   test "should monetize total_amount" do
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: @pricing_tier,
       total_amount_cents: 1000,
       currency: "USD",
@@ -64,7 +64,7 @@ class TicketPurchaseTest < ActiveSupport::TestCase
   test "should return ticket count from pricing tier" do
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: @pricing_tier,
       total_amount_cents: 1000,
       currency: "USD",
@@ -77,7 +77,7 @@ class TicketPurchaseTest < ActiveSupport::TestCase
   test "should have default metadata and purchase_date" do
     ticket_purchase = TicketPurchase.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: @pricing_tier,
       total_amount_cents: 1000,
       currency: "USD"

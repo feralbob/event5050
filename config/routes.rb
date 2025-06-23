@@ -12,7 +12,7 @@ Rails.application.routes.draw do
       resources :organizations
       resources :raffles
       resources :tickets
-      resources :ticket_purchasers
+      resources :customers
       resources :pricing_tiers do
         member do
           post :duplicate

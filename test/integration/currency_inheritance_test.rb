@@ -61,8 +61,8 @@ class CurrencyInheritanceTest < ActiveSupport::TestCase
       assert_equal "EUR", pricing_tier.currency
       assert_equal Money.new(500, "EUR"), pricing_tier.total_price
 
-      # Create ticket purchaser
-      purchaser = TicketPurchaser.create!(
+      # Create customer
+      customer = Customer.create!(
         first_name: "Marie",
         last_name: "Dubois",
         email: "marie.dubois@example.fr",
@@ -72,7 +72,7 @@ class CurrencyInheritanceTest < ActiveSupport::TestCase
       # Create ticket purchase
       ticket_purchase = TicketPurchase.create!(
         draw: draw,
-        ticket_purchaser: purchaser,
+        customer: customer,
         pricing_tier: pricing_tier,
         total_amount_cents: 500,
         currency: "EUR",
@@ -86,7 +86,7 @@ class CurrencyInheritanceTest < ActiveSupport::TestCase
       # Create ticket - should inherit EUR from draw
       ticket = Ticket.create!(
         draw: draw,
-        ticket_purchaser: purchaser,
+        customer: customer,
         pricing_tier: pricing_tier,
         ticket_purchase: ticket_purchase,
         ticket_number: "EUR-NEW-001"

@@ -1,7 +1,7 @@
 class TicketPurchaseService
   attr_reader :draw, :pricing_tier, :purchaser_attributes
 
-  Result = Struct.new(:success?, :tickets, :ticket_purchaser, :ticket_purchase, :error, keyword_init: true)
+  Result = Struct.new(:success?, :tickets, :customer, :ticket_purchase, :error, keyword_init: true)
 
   def initialize(draw:, pricing_tier:, purchaser_attributes:)
     @draw = draw
@@ -15,15 +15,15 @@ class TicketPurchaseService
     return error_result("This pricing tier is no longer available") unless pricing_tier.active?
 
     ActiveRecord::Base.transaction do
-      ticket_purchaser = find_or_create_ticket_purchaser!
-      ticket_purchase = create_ticket_purchase!(ticket_purchaser)
-      tickets = create_tickets!(ticket_purchaser, ticket_purchase)
+      customer = find_or_create_customer!
+      ticket_purchase = create_ticket_purchase!(customer)
+      tickets = create_tickets!(customer, ticket_purchase)
       update_draw_revenue!(ticket_purchase)
 
       Result.new(
         success?: true,
         tickets: tickets,
-        ticket_purchaser: ticket_purchaser,
+        customer: customer,
         ticket_purchase: ticket_purchase,
         error: nil
       )
@@ -40,28 +40,28 @@ class TicketPurchaseService
     pricing_tier.raffle_id == draw.raffle_id
   end
 
-  def find_or_create_ticket_purchaser!
+  def find_or_create_customer!
     if purchaser_attributes[:email].present?
-      ticket_purchaser = TicketPurchaser.find_or_initialize_by(
+      customer = Customer.find_or_initialize_by(
         email: purchaser_attributes[:email]
       )
 
       # Update attributes if it's a new record
-      if ticket_purchaser.new_record?
-        ticket_purchaser.assign_attributes(purchaser_attributes)
+      if customer.new_record?
+        customer.assign_attributes(purchaser_attributes)
       end
 
-      ticket_purchaser.save!
-      ticket_purchaser
+      customer.save!
+      customer
     else
-      TicketPurchaser.create!(purchaser_attributes)
+      Customer.create!(purchaser_attributes)
     end
   end
 
-  def create_ticket_purchase!(ticket_purchaser)
+  def create_ticket_purchase!(customer)
     TicketPurchase.create!(
       draw: draw,
-      ticket_purchaser: ticket_purchaser,
+      customer: customer,
       pricing_tier: pricing_tier,
       total_amount: pricing_tier.total_price,
       currency: pricing_tier.currency,
@@ -69,12 +69,12 @@ class TicketPurchaseService
     )
   end
 
-  def create_tickets!(ticket_purchaser, ticket_purchase)
+  def create_tickets!(customer, ticket_purchase)
     tickets = []
 
     pricing_tier.ticket_quantity.times do
       ticket = draw.tickets.build(
-        ticket_purchaser: ticket_purchaser,
+        customer: customer,
         pricing_tier: pricing_tier,
         ticket_purchase: ticket_purchase,
         status: :active
@@ -96,7 +96,7 @@ class TicketPurchaseService
     Result.new(
       success?: false,
       tickets: [],
-      ticket_purchaser: nil,
+      customer: nil,
       ticket_purchase: nil,
       error: message
     )

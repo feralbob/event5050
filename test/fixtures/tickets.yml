@@ -2,7 +2,7 @@
 
 one:
   draw: one
-  ticket_purchaser: one
+  customer: one
   ticket_number: ABC-123-XYZ
   status: active
   prize_won: 
@@ -10,7 +10,7 @@ one:
 
 two:
   draw: two
-  ticket_purchaser: two
+  customer: two
   ticket_number: DEF-456-UVW
   status: active
   prize_won: 

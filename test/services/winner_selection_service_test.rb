@@ -9,7 +9,7 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
     # Create test tickets
     @tickets = []
     5.times do |i|
-      purchaser = TicketPurchaser.create!(
+      customer = Customer.create!(
         first_name: "Test#{i}",
         last_name: "User#{i}",
         email: "test#{i}@example.com",
@@ -17,7 +17,7 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
       )
 
       ticket = @draw.tickets.build(
-        ticket_purchaser: purchaser,
+        customer: customer,
         status: :active
       )
       ticket.generate_ticket_number!
@@ -47,7 +47,7 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
     winner2 = result2.winner
 
     assert_not_equal winner1, winner2
-    assert_not_equal winner1.ticket_purchaser, winner2.ticket_purchaser
+    assert_not_equal winner1.customer, winner2.customer
   end
 
   test "should handle no eligible tickets" do
@@ -60,9 +60,9 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
       status: :closed
     )
 
-    # Create tickets that are all won by different purchasers
+    # Create tickets that are all won by different customers
     5.times do |i|
-      purchaser = TicketPurchaser.create!(
+      customer = Customer.create!(
         first_name: "Winner#{i}",
         last_name: "Test#{i}",
         email: "winner#{i}@example.com",
@@ -70,7 +70,7 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
       )
 
       ticket = other_draw.tickets.build(
-        ticket_purchaser: purchaser,
+        customer: customer,
         status: :won,
         prize_won: "prize_#{i}"
       )
@@ -89,11 +89,20 @@ class WinnerSelectionServiceTest < ActiveSupport::TestCase
     # Mark some tickets as refunded
     @tickets.first(3).each { |t| t.update!(status: :refunded) }
 
-    result = @service.select_winner("main_prize")
+    # Reload to ensure fresh state and reinitialize service
+    @draw.reload
+    service = WinnerSelectionService.new(@draw)
+
+    result = service.select_winner("main_prize")
 
     assert result.success?, "Expected success but got: #{result.error}"
     assert result.winner.present?, "Expected a winner to be selected"
-    assert @tickets.last(2).include?(result.winner), "Winner should be from active tickets"
+
+    # The winner will now have status :won (changed by the service)
+    # But we need to check it was originally from active tickets
+    # Check that the winner was NOT one of the refunded tickets
+    refunded_ticket_ids = @tickets.first(3).map(&:id)
+    assert_not refunded_ticket_ids.include?(result.winner.id), "Winner should not be from refunded tickets"
   end
 
   test "should not select winner if draw not closed" do

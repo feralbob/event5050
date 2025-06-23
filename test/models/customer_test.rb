@@ -1,85 +1,85 @@
 require "test_helper"
 
-class TicketPurchaserTest < ActiveSupport::TestCase
+class CustomerTest < ActiveSupport::TestCase
   test "should have email" do
-    purchaser = TicketPurchaser.new(
+    customer = Customer.new(
       first_name: "John",
       last_name: "Doe",
       phone: "555-1234"
     )
-    assert_not purchaser.valid?
-    assert_includes purchaser.errors[:email], "can't be blank"
+    assert_not customer.valid?
+    assert_includes customer.errors[:email], "can't be blank"
   end
 
   test "should have valid email format" do
-    purchaser = TicketPurchaser.new(
+    customer = Customer.new(
       first_name: "John",
       last_name: "Doe",
       email: "invalid.email",
       phone: "555-1234"
     )
-    assert_not purchaser.valid?
-    assert_includes purchaser.errors[:email], "is invalid"
+    assert_not customer.valid?
+    assert_includes customer.errors[:email], "is invalid"
   end
 
   test "should have first_name" do
-    purchaser = TicketPurchaser.new(
+    customer = Customer.new(
       last_name: "Doe",
       email: "john@example.com",
       phone: "555-1234"
     )
-    assert_not purchaser.valid?
-    assert_includes purchaser.errors[:first_name], "can't be blank"
+    assert_not customer.valid?
+    assert_includes customer.errors[:first_name], "can't be blank"
   end
 
   test "should have last_name" do
-    purchaser = TicketPurchaser.new(
+    customer = Customer.new(
       first_name: "John",
       email: "john@example.com",
       phone: "555-1234"
     )
-    assert_not purchaser.valid?
-    assert_includes purchaser.errors[:last_name], "can't be blank"
+    assert_not customer.valid?
+    assert_includes customer.errors[:last_name], "can't be blank"
   end
 
-  test "should create valid purchaser" do
-    purchaser = TicketPurchaser.new(
+  test "should create valid customer" do
+    customer = Customer.new(
       first_name: "John",
       last_name: "Doe",
       email: "john.doe@example.com",
       phone: "555-1234"
     )
-    assert purchaser.valid?
+    assert customer.valid?
   end
 
   test "should have many tickets" do
-    purchaser = TicketPurchaser.create!(
+    customer = Customer.create!(
       first_name: "John",
       last_name: "Doe",
       email: "john.doe@example.com",
       phone: "555-1234"
     )
 
-    assert_respond_to purchaser, :tickets
+    assert_respond_to customer, :tickets
   end
 
   test "should have full_name method" do
-    purchaser = TicketPurchaser.new(
+    customer = Customer.new(
       first_name: "John",
       last_name: "Doe",
       email: "john.doe@example.com",
       phone: "555-1234"
     )
 
-    assert_equal "John Doe", purchaser.full_name
+    assert_equal "John Doe", customer.full_name
   end
 
   test "phone number is optional" do
-    purchaser = TicketPurchaser.new(
+    customer = Customer.new(
       first_name: "John",
       last_name: "Doe",
       email: "john.doe@example.com"
     )
-    assert purchaser.valid?
+    assert customer.valid?
   end
 end

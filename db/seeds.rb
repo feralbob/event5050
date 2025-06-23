@@ -58,12 +58,7 @@ ActsAsTenant.without_tenant do
     description: "Weekly Friday night raffle to support community programs",
     status: :active,
     recurring: true,
-    recurrence_rule: "FREQ=WEEKLY;BYDAY=FR",
-    ticket_pricing: [
-      { "quantity" => 1, "price_cents" => 500, "currency" => "USD" },
-      { "quantity" => 3, "price_cents" => 1000, "currency" => "USD" },
-      { "quantity" => 10, "price_cents" => 2500, "currency" => "USD" }
-    ]
+    recurrence_rule: "FREQ=WEEKLY;BYDAY=FR"
   )
 
   raffle2 = Raffle.find_or_create_by!(
@@ -72,11 +67,7 @@ ActsAsTenant.without_tenant do
     name: "Championship Game Special",
     description: "Special one-time raffle for the championship game",
     status: :draft,
-    recurring: false,
-    ticket_pricing: [
-      { "quantity" => 1, "price_cents" => 1000, "currency" => "USD" },
-      { "quantity" => 5, "price_cents" => 4000, "currency" => "USD" }
-    ]
+    recurring: false
   )
 
   # Create draws
@@ -100,25 +91,24 @@ ActsAsTenant.without_tenant do
     prize_pool: { "main_prize" => { "percentage" => 50 } }
   )
 
-  # Create ticket purchasers
-  purchaser1 = TicketPurchaser.find_or_create_by!(
+  # Create customers
+  customer1 = Customer.find_or_create_by!(
     email: "john.doe@example.com"
-  ) do |tp|
-    tp.first_name = "John"
-    tp.last_name = "Doe"
-    tp.phone = "555-0123"
+  ) do |c|
+    c.first_name = "John"
+    c.last_name = "Doe"
+    c.phone = "555-0123"
   end
 
-  purchaser2 = TicketPurchaser.find_or_create_by!(
+  customer2 = Customer.find_or_create_by!(
     email: "jane.smith@example.com"
-  ) do |tp|
-    tp.first_name = "Jane"
-    tp.last_name = "Smith"
-    tp.phone = "555-0456"
+  ) do |c|
+    c.first_name = "Jane"
+    c.last_name = "Smith"
+    c.phone = "555-0456"
   end
 
-  # Create some tickets
-  # Create pricing tiers if they don't exist
+  # Create pricing tiers for raffle1
   single_tier = raffle1.pricing_tiers.find_or_create_by!(code: "single") do |pt|
     pt.name = "Single Ticket"
     pt.ticket_quantity = 1
@@ -135,9 +125,26 @@ ActsAsTenant.without_tenant do
     pt.active = true
   end
 
+  # Create pricing tiers for raffle2
+  single_tier2 = raffle2.pricing_tiers.find_or_create_by!(code: "single") do |pt|
+    pt.name = "Single Ticket"
+    pt.ticket_quantity = 1
+    pt.total_price_cents = 1000
+    pt.display_order = 1
+    pt.active = true
+  end
+
+  bundle_tier2 = raffle2.pricing_tiers.find_or_create_by!(code: "bundle_5") do |pt|
+    pt.name = "5 Ticket Bundle"
+    pt.ticket_quantity = 5
+    pt.total_price_cents = 4000
+    pt.display_order = 2
+    pt.active = true
+  end
+
   purchase1 = TicketPurchase.find_or_create_by!(
     draw: draw1,
-    ticket_purchaser: purchaser1
+    customer: customer1
   ) do |tp|
     tp.pricing_tier = single_tier
     tp.total_amount_cents = 500
@@ -147,7 +154,7 @@ ActsAsTenant.without_tenant do
 
   purchase2 = TicketPurchase.find_or_create_by!(
     draw: draw1,
-    ticket_purchaser: purchaser2
+    customer: customer2
   ) do |tp|
     tp.pricing_tier = bundle_tier
     tp.total_amount_cents = 1000
@@ -157,7 +164,7 @@ ActsAsTenant.without_tenant do
 
   ticket1 = Ticket.find_or_create_by!(
     draw: draw1,
-    ticket_purchaser: purchaser1,
+    customer: customer1,
     ticket_number: "FRI-001-ABC",
     ticket_purchase: purchase1,
     pricing_tier: purchase1.pricing_tier,
@@ -170,7 +177,7 @@ ActsAsTenant.without_tenant do
 
   ticket2 = Ticket.find_or_create_by!(
     draw: draw1,
-    ticket_purchaser: purchaser2,
+    customer: customer2,
     ticket_number: "FRI-002-DEF",
     ticket_purchase: purchase2,
     pricing_tier: purchase2.pricing_tier,

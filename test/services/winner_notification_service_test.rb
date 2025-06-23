@@ -38,8 +38,8 @@ class WinnerNotificationServiceTest < ActiveSupport::TestCase
   test "should include winner details" do
     notification_data = @service.build_notification_data
 
-    assert_equal @ticket.ticket_purchaser.full_name, notification_data[:winner_name]
-    assert_equal @ticket.ticket_purchaser.email, notification_data[:winner_email]
+    assert_equal @ticket.customer.full_name, notification_data[:winner_name]
+    assert_equal @ticket.customer.email, notification_data[:winner_email]
   end
 
   test "should include draw details" do

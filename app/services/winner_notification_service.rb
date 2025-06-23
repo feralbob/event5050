@@ -22,8 +22,8 @@ class WinnerNotificationService
 
     {
       ticket_number: @ticket.ticket_number,
-      winner_name: @ticket.ticket_purchaser.full_name,
-      winner_email: @ticket.ticket_purchaser.email,
+      winner_name: @ticket.customer.full_name,
+      winner_email: @ticket.customer.email,
       raffle_name: @draw.raffle.name,
       draw_date: @draw.draw_date,
       prize_type: format_prize_type,

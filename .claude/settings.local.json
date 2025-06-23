@@ -4,7 +4,9 @@
       "Bash(bin/rails test:*)",
       "Bash(bin/rails generate migration:*)",
       "Bash(bin/rails:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

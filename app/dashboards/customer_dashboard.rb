@@ -1,6 +1,6 @@
 require "administrate/base_dashboard"
 
-class TicketPurchaserDashboard < Administrate::BaseDashboard
+class CustomerDashboard < Administrate::BaseDashboard
   # ATTRIBUTE_TYPES
   # a hash that describes the type of each of the model's fields.
   #
@@ -66,10 +66,10 @@ class TicketPurchaserDashboard < Administrate::BaseDashboard
   #   }.freeze
   COLLECTION_FILTERS = {}.freeze
 
-  # Overwrite this method to customize how ticket purchasers are displayed
+  # Overwrite this method to customize how customers are displayed
   # across all pages of the admin dashboard.
   #
-  # def display_resource(ticket_purchaser)
-  #   "TicketPurchaser ##{ticket_purchaser.id}"
+  # def display_resource(customer)
+  #   "Customer ##{customer.id}"
   # end
 end

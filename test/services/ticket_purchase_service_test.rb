@@ -107,8 +107,8 @@ class TicketPurchaseServiceTest < ActiveSupport::TestCase
     assert_equal 1000, @draw.total_revenue_cents
   end
 
-  test "should find existing ticket purchaser by email" do
-    existing_purchaser = TicketPurchaser.create!(
+  test "should find existing customer by email" do
+    existing_customer = Customer.create!(
       first_name: "Existing",
       last_name: "User",
       email: "existing@example.com",
@@ -126,14 +126,14 @@ class TicketPurchaseServiceTest < ActiveSupport::TestCase
       }
     )
 
-    assert_no_difference("TicketPurchaser.count") do
+    assert_no_difference("Customer.count") do
       result = service.purchase!
       assert result.success?
-      assert_equal existing_purchaser, result.ticket_purchaser
+      assert_equal existing_customer, result.customer
     end
   end
 
-  test "should create new ticket purchaser if not found" do
+  test "should create new customer if not found" do
     service = TicketPurchaseService.new(
       draw: @draw,
       pricing_tier: @single_tier,
@@ -145,10 +145,10 @@ class TicketPurchaseServiceTest < ActiveSupport::TestCase
       }
     )
 
-    assert_difference("TicketPurchaser.count", 1) do
+    assert_difference("Customer.count", 1) do
       result = service.purchase!
       assert result.success?
-      assert_equal "new@example.com", result.ticket_purchaser.email
+      assert_equal "new@example.com", result.customer.email
     end
   end
 
@@ -198,7 +198,7 @@ class TicketPurchaseServiceTest < ActiveSupport::TestCase
       }
     )
 
-    assert_no_difference([ "Ticket.count", "TicketPurchaser.count", "TicketPurchase.count" ]) do
+    assert_no_difference([ "Ticket.count", "Customer.count", "TicketPurchase.count" ]) do
       result = service.purchase!
       assert_not result.success?
       assert result.error.present?

@@ -8,11 +8,11 @@ class WinnerSelectionService
   def select_winner(prize_name)
     return Result.new(success?: false, error: "Draw must be closed before selecting winners") unless @draw.closed?
 
-    # Get eligible tickets (active status, not already won, unique purchasers)
-    won_purchaser_ids = @draw.tickets.won.pluck(:ticket_purchaser_id)
+    # Get eligible tickets (active status, not already won, unique customers)
+    won_customer_ids = @draw.tickets.won.pluck(:customer_id)
     eligible_tickets = @draw.tickets
       .active
-      .where.not(ticket_purchaser_id: won_purchaser_ids)
+      .where.not(customer_id: won_customer_ids)
       .to_a
 
     return Result.new(success?: false, error: "No eligible tickets available") if eligible_tickets.empty?

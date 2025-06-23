@@ -34,7 +34,7 @@ class DrawClosingServiceTest < ActiveSupport::TestCase
 
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: ticket_purchasers(:one),
+      customer: customers(:one),
       pricing_tier: pricing_tier,
       total_amount_cents: 1500, # 3 tickets at 500 each
       purchase_date: Time.current
@@ -42,7 +42,7 @@ class DrawClosingServiceTest < ActiveSupport::TestCase
 
     3.times do
       ticket = @draw.tickets.build(
-        ticket_purchaser: ticket_purchasers(:one),
+        customer: customers(:one),
         ticket_purchase: ticket_purchase,
         pricing_tier: pricing_tier,
         status: :active

@@ -1,4 +1,4 @@
-class TicketPurchaser < ApplicationRecord
+class Customer < ApplicationRecord
   has_many :tickets, dependent: :restrict_with_error
   has_many :ticket_purchases, dependent: :restrict_with_error
 

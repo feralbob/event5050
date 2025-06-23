@@ -3,7 +3,7 @@ class TicketPurchase < ApplicationRecord
   include CurrencyConsistencyValidatable
 
   belongs_to :draw
-  belongs_to :ticket_purchaser
+  belongs_to :customer
   belongs_to :pricing_tier
   has_many :tickets, dependent: :nullify
 

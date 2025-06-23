@@ -35,7 +35,7 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
       post ticket_purchases_url, params: {
         draw_id: @draw.id,
         ticket_purchase: {
-          ticket_purchaser_attributes: {
+          customer_attributes: {
             first_name: "John",
             last_name: "Doe",
             email: "john@example.com",
@@ -56,7 +56,7 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
       post ticket_purchases_url, params: {
         draw_id: @draw.id,
         ticket_purchase: {
-          ticket_purchaser_attributes: {
+          customer_attributes: {
             first_name: "Jane",
             last_name: "Smith",
             email: "jane@example.com",
@@ -74,7 +74,7 @@ class TicketPurchasesControllerTest < ActionDispatch::IntegrationTest
     post ticket_purchases_url, params: {
       draw_id: @draw.id,
       ticket_purchase: {
-        ticket_purchaser_attributes: {
+        customer_attributes: {
           first_name: "Bob",
           last_name: "Johnson",
           email: "bob@example.com",

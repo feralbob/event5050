@@ -1,6 +1,6 @@
 class Ticket < ApplicationRecord
   belongs_to :draw
-  belongs_to :ticket_purchaser
+  belongs_to :customer
   belongs_to :pricing_tier, optional: true
   belongs_to :ticket_purchase, optional: true
 
@@ -57,16 +57,16 @@ class Ticket < ApplicationRecord
   private
 
   def no_multiple_wins_per_draw
-    return unless won? && draw && ticket_purchaser
+    return unless won? && draw && customer
 
     existing_winner = Ticket.where(
       draw: draw,
-      ticket_purchaser: ticket_purchaser,
+      customer: customer,
       status: :won
     ).where.not(id: id).exists?
 
     if existing_winner
-      errors.add(:base, "Purchaser has already won a prize in this draw")
+      errors.add(:base, "Customer has already won a prize in this draw")
     end
   end
 end

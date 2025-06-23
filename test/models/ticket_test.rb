@@ -3,7 +3,7 @@ require "test_helper"
 class TicketTest < ActiveSupport::TestCase
   setup do
     @draw = draws(:one)
-    @purchaser = TicketPurchaser.create!(
+    @customer = Customer.create!(
       first_name: "John",
       last_name: "Doe",
       email: "john.doe@example.com",
@@ -13,7 +13,7 @@ class TicketTest < ActiveSupport::TestCase
 
   test "should belong to a draw" do
     ticket = Ticket.new(
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active"
     )
@@ -21,20 +21,20 @@ class TicketTest < ActiveSupport::TestCase
     assert_includes ticket.errors[:draw], "must exist"
   end
 
-  test "should belong to a ticket_purchaser" do
+  test "should belong to a customer" do
     ticket = Ticket.new(
       draw: @draw,
       ticket_number: "TKT123456",
       status: "active"
     )
     assert_not ticket.valid?
-    assert_includes ticket.errors[:ticket_purchaser], "must exist"
+    assert_includes ticket.errors[:customer], "must exist"
   end
 
   test "should have ticket_number" do
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       status: "active"
     )
     assert_not ticket.valid?
@@ -44,14 +44,14 @@ class TicketTest < ActiveSupport::TestCase
   test "should have unique ticket_number" do
     Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active"
     )
 
     duplicate_ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active"
     )
@@ -63,7 +63,7 @@ class TicketTest < ActiveSupport::TestCase
   test "should work without price_cents when using new purchase model" do
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active"
     )
@@ -73,7 +73,7 @@ class TicketTest < ActiveSupport::TestCase
   test "should track status" do
     ticket = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active"
     )
@@ -89,7 +89,7 @@ class TicketTest < ActiveSupport::TestCase
   test "should generate human-readable ticket number" do
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser
+      customer: @customer
     )
 
     ticket.generate_ticket_number!
@@ -107,7 +107,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active",
       purchase_metadata: metadata
@@ -117,20 +117,20 @@ class TicketTest < ActiveSupport::TestCase
     assert_equal "192.168.1.1", ticket.purchase_metadata["ip_address"]
   end
 
-  test "should not allow multiple wins for same purchaser in same draw" do
+  test "should not allow multiple wins for same customer in same draw" do
     # Create first winning ticket
     ticket1 = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT111111",
       status: "won",
       prize_won: "main_prize"
     )
 
-    # Try to create second ticket for same purchaser
+    # Try to create second ticket for same customer
     ticket2 = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT222222",
       status: "active"
     )
@@ -140,7 +140,7 @@ class TicketTest < ActiveSupport::TestCase
     ticket2.prize_won = "secondary_prize"
 
     assert_not ticket2.valid?
-    assert_includes ticket2.errors[:base], "Purchaser has already won a prize in this draw"
+    assert_includes ticket2.errors[:base], "Customer has already won a prize in this draw"
   end
 
 
@@ -160,7 +160,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       total_amount_cents: 1000,
       currency: "USD",
@@ -169,7 +169,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       ticket_purchase: ticket_purchase,
       ticket_number: "NEW-123-XYZ"
@@ -183,7 +183,7 @@ class TicketTest < ActiveSupport::TestCase
   test "should inherit currency from draw/raffle" do
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       status: "active"
     )
@@ -220,7 +220,7 @@ class TicketTest < ActiveSupport::TestCase
 
       ticket = Ticket.new(
         draw: draw,
-        ticket_purchaser: @purchaser,
+        customer: @customer,
         ticket_number: "EUR-123-456"
       )
 
@@ -244,7 +244,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       total_amount_cents: 1500,
       currency: "CAD",
@@ -253,7 +253,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       ticket_purchase: ticket_purchase,
       ticket_number: "CAD-123-XYZ"
@@ -276,7 +276,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       ticket_number: "JPY-123-456"
     )
@@ -301,7 +301,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       total_amount_cents: 500,
       currency: "EUR",
@@ -310,7 +310,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket = Ticket.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       ticket_purchase: ticket_purchase,
       ticket_number: "EUR-TEST-123"
@@ -338,7 +338,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket_purchase = TicketPurchase.create!(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       pricing_tier: pricing_tier,
       total_amount_cents: 1234,
       currency: "USD",
@@ -347,7 +347,7 @@ class TicketTest < ActiveSupport::TestCase
 
     ticket = Ticket.new(
       draw: @draw,
-      ticket_purchaser: @purchaser,
+      customer: @customer,
       ticket_number: "TKT123456",
       ticket_purchase: ticket_purchase,
       pricing_tier: pricing_tier,

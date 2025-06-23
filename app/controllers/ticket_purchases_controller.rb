@@ -25,7 +25,7 @@ class TicketPurchasesController < ApplicationController
       service = TicketPurchaseService.new(
         draw: @draw,
         pricing_tier: pricing_tier,
-        purchaser_attributes: params[:ticket_purchase][:ticket_purchaser_attributes].permit(
+        purchaser_attributes: params[:ticket_purchase][:customer_attributes].permit(
           :first_name, :last_name, :email, :phone
         )
       )
@@ -48,7 +48,7 @@ class TicketPurchasesController < ApplicationController
   def confirmation
     @ticket = Ticket.find(params[:id])
     @all_tickets = Ticket.where(
-      ticket_purchaser: @ticket.ticket_purchaser,
+      customer: @ticket.customer,
       draw: @ticket.draw,
       created_at: (@ticket.created_at - 1.minute)..(@ticket.created_at + 1.minute)
     )
@@ -63,7 +63,7 @@ class TicketPurchasesController < ApplicationController
   def ticket_purchase_params
     params.require(:ticket_purchase).permit(
       :pricing_tier_id,
-      ticket_purchaser_attributes: [ :first_name, :last_name, :email, :phone ]
+      customer_attributes: [ :first_name, :last_name, :email, :phone ]
     )
   end
 end
@@ -71,25 +71,25 @@ end
 class TicketPurchaseForm
   include ActiveModel::Model
 
-  attr_accessor :pricing_tier_id, :ticket_purchaser_attributes
+  attr_accessor :pricing_tier_id, :customer_attributes
 
   validates :pricing_tier_id, presence: true
-  validate :ticket_purchaser_attributes_valid
+  validate :customer_attributes_valid
 
   private
 
-  def ticket_purchaser_attributes_valid
-    return unless ticket_purchaser_attributes
+  def customer_attributes_valid
+    return unless customer_attributes
 
-    if ticket_purchaser_attributes[:email].blank?
+    if customer_attributes[:email].blank?
       errors.add(:base, "Email is required")
     end
 
-    if ticket_purchaser_attributes[:first_name].blank?
+    if customer_attributes[:first_name].blank?
       errors.add(:base, "First name is required")
     end
 
-    if ticket_purchaser_attributes[:last_name].blank?
+    if customer_attributes[:last_name].blank?
       errors.add(:base, "Last name is required")
     end
   end

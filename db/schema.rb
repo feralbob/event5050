@@ -10,11 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_16_005520) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_23_011254) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
   enable_extension "postgis"
+
+  create_table "customers", force: :cascade do |t|
+    t.string "first_name"
+    t.string "last_name"
+    t.string "email"
+    t.string "phone"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_customers_on_email"
+  end
 
   create_table "draws", force: :cascade do |t|
     t.bigint "raffle_id", null: false
@@ -115,19 +125,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_16_005520) do
     t.index ["organization_id"], name: "index_raffles_on_organization_id"
   end
 
-  create_table "ticket_purchasers", force: :cascade do |t|
-    t.string "first_name"
-    t.string "last_name"
-    t.string "email"
-    t.string "phone"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_ticket_purchasers_on_email"
-  end
-
   create_table "ticket_purchases", force: :cascade do |t|
     t.bigint "draw_id", null: false
-    t.bigint "ticket_purchaser_id", null: false
+    t.bigint "customer_id", null: false
     t.bigint "pricing_tier_id", null: false
     t.integer "total_amount_cents", null: false
     t.string "currency", default: "USD", null: false
@@ -135,16 +135,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_16_005520) do
     t.jsonb "metadata", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["customer_id"], name: "index_ticket_purchases_on_customer_id"
     t.index ["draw_id", "purchase_date"], name: "index_ticket_purchases_on_draw_id_and_purchase_date"
     t.index ["draw_id"], name: "index_ticket_purchases_on_draw_id"
     t.index ["pricing_tier_id"], name: "index_ticket_purchases_on_pricing_tier_id"
     t.index ["purchase_date"], name: "index_ticket_purchases_on_purchase_date"
-    t.index ["ticket_purchaser_id"], name: "index_ticket_purchases_on_ticket_purchaser_id"
   end
 
   create_table "tickets", force: :cascade do |t|
     t.bigint "draw_id", null: false
-    t.bigint "ticket_purchaser_id", null: false
+    t.bigint "customer_id", null: false
     t.string "ticket_number"
     t.string "prize_won"
     t.jsonb "purchase_metadata"
@@ -153,11 +153,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_16_005520) do
     t.integer "status", default: 0, null: false
     t.bigint "pricing_tier_id"
     t.bigint "ticket_purchase_id"
+    t.index ["customer_id"], name: "index_tickets_on_customer_id"
     t.index ["draw_id"], name: "index_tickets_on_draw_id"
     t.index ["pricing_tier_id"], name: "index_tickets_on_pricing_tier_id"
     t.index ["ticket_number"], name: "index_tickets_on_ticket_number", unique: true
     t.index ["ticket_purchase_id"], name: "index_tickets_on_ticket_purchase_id"
-    t.index ["ticket_purchaser_id"], name: "index_tickets_on_ticket_purchaser_id"
   end
 
   add_foreign_key "draws", "raffles"
@@ -167,11 +167,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_16_005520) do
   add_foreign_key "pricing_tiers", "raffles"
   add_foreign_key "raffles", "licenses"
   add_foreign_key "raffles", "organizations"
+  add_foreign_key "ticket_purchases", "customers"
   add_foreign_key "ticket_purchases", "draws"
   add_foreign_key "ticket_purchases", "pricing_tiers"
-  add_foreign_key "ticket_purchases", "ticket_purchasers"
+  add_foreign_key "tickets", "customers"
   add_foreign_key "tickets", "draws"
   add_foreign_key "tickets", "pricing_tiers"
-  add_foreign_key "tickets", "ticket_purchasers"
   add_foreign_key "tickets", "ticket_purchases"
 end

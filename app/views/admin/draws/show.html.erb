@@ -107,8 +107,8 @@ as well as a link to its edit page.
           <tr>
             <td><%= ticket.ticket_number %></td>
             <td><%= ticket.prize_won.humanize %></td>
-            <td><%= ticket.ticket_purchaser.full_name %></td>
-            <td><%= ticket.ticket_purchaser.email %></td>
+            <td><%= ticket.customer.full_name %></td>
+            <td><%= ticket.customer.email %></td>
           </tr>
         <% end %>
       </tbody>

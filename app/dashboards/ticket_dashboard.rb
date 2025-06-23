@@ -16,7 +16,7 @@ class TicketDashboard < Administrate::BaseDashboard
     purchase_metadata: Field::String.with_options(searchable: false),
     status: Field::Select.with_options(collection: Ticket.statuses.keys),
     ticket_number: Field::String,
-    ticket_purchaser: Field::BelongsTo,
+    customer: Field::BelongsTo,
     created_at: Field::DateTime,
     updated_at: Field::DateTime
   }.freeze
@@ -30,7 +30,7 @@ class TicketDashboard < Administrate::BaseDashboard
     ticket_number
     draw
     pricing_tier
-    ticket_purchaser
+    customer
     status
   ].freeze
 
@@ -45,7 +45,7 @@ class TicketDashboard < Administrate::BaseDashboard
     purchase_metadata
     status
     ticket_number
-    ticket_purchaser
+    customer
     created_at
     updated_at
   ].freeze
@@ -61,7 +61,7 @@ class TicketDashboard < Administrate::BaseDashboard
     purchase_metadata
     status
     ticket_number
-    ticket_purchaser
+    customer
   ].freeze
 
   # COLLECTION_FILTERS
