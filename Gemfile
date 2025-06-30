@@ -26,7 +26,9 @@ gem "jbuilder"
 
 # Use Devise for authentication [https://github.com/heartcombo/devise]
 gem "devise"
-gem "devise-passkeys"
+
+# WebAuthn for passwordless authentication
+gem "webauthn"
 
 # Multitenancy
 gem "acts_as_tenant"

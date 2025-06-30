@@ -23,6 +23,33 @@ Rails.application.routes.draw do
       root to: "organizations#index"
     end
   devise_for :org_users
+
+  # Customer authentication routes
+  namespace :customers do
+    resources :registrations, only: [ :new, :create ] do
+      collection do
+        get :pending, path: "pending"
+      end
+    end
+
+    resource :session, only: [ :new, :create, :destroy ] do
+      post :verify
+      post :discoverable
+    end
+
+    resources :confirmations, only: [ :new, :create ] do
+      collection do
+        get ":token", action: :show, as: ""
+      end
+    end
+
+    resources :credentials, only: [ :index, :new, :create, :destroy ] do
+      collection do
+        post :verify
+      end
+    end
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -19,4 +19,24 @@ class ApplicationController < ActionController::Base
   def current_organization
     current_tenant
   end
+
+  # Customer authentication helpers
+  def current_customer
+    @current_customer ||= find_customer_from_session
+  end
+  helper_method :current_customer
+
+  def customer_signed_in?
+    current_customer.present?
+  end
+  helper_method :customer_signed_in?
+
+  def find_customer_from_session
+    return nil unless session[:customer_id]
+
+    Customer.confirmed.find_by(id: session[:customer_id])
+  rescue ActiveRecord::RecordNotFound
+    session.delete(:customer_id)
+    nil
+  end
 end

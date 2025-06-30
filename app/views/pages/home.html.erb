@@ -5,7 +5,114 @@
       <p class="py-6">
         Event 5050 is a platform for creating and managing 50/50 raffleevents.
       </p>
-      <button class="btn btn-primary">Get Started</button>
+      
+      <% if customer_signed_in? %>
+        <div class="space-y-4">
+          <p class="text-lg">Welcome back, <%= current_customer.email %>!</p>
+          <div class="flex flex-col gap-2">
+            <%= link_to "My Credentials", customers_credentials_path, class: "btn btn-primary" %>
+            <%= link_to "Sign Out", customers_session_path, data: { "turbo-method": :delete }, class: "btn btn-outline" %>
+          </div>
+        </div>
+      <% else %>
+        <div class="space-y-4">
+          <div class="flex flex-col gap-2">
+            <%= link_to "Sign Up", new_customers_registration_path, class: "btn btn-primary" %>
+            <button id="discoverable-signin" class="btn btn-secondary">
+              Sign In
+            </button>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
+
+<%= content_for :javascript do %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, looking for signin button');
+      const discoverableButton = document.getElementById('discoverable-signin');
+      
+      if (discoverableButton) {
+        console.log('Found signin button, adding event listener');
+        discoverableButton.addEventListener('click', async function() {
+          console.log('Sign in button clicked');
+          try {
+            // Check if WebAuthn is supported
+            if (!window.PublicKeyCredential) {
+              alert('WebAuthn is not supported in this browser or requires HTTPS');
+              return;
+            }
+
+            console.log('WebAuthn supported, making request to /customers/session/discoverable');
+            
+            // Request discoverable credential authentication
+            const response = await fetch('/customers/session/discoverable', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+              }
+            });
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Failed to start authentication');
+            }
+
+            const { options } = await response.json();
+            console.log('Got options:', options);
+            
+            // Parse options and create credential request
+            const credentialOptions = PublicKeyCredential.parseRequestOptionsFromJSON(options);
+            console.log('Parsed credential options');
+            
+            // Request credential from authenticator
+            const credential = await navigator.credentials.get({
+              publicKey: credentialOptions
+            });
+
+            console.log('Got credential from authenticator');
+
+            // Convert to JSON and send to server
+            const credentialJSON = credential.toJSON();
+            
+            const verifyResponse = await fetch('/customers/session/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+              },
+              body: JSON.stringify(credentialJSON)
+            });
+
+            console.log('Verify response status:', verifyResponse.status);
+
+            if (!verifyResponse.ok) {
+              const errorData = await verifyResponse.json();
+              throw new Error(errorData.error || 'Authentication failed');
+            }
+
+            const result = await verifyResponse.json();
+            console.log('Verification result:', result);
+            
+            if (result.redirect_url) {
+              window.location.href = result.redirect_url;
+            } else {
+              window.location.reload();
+            }
+            
+          } catch (error) {
+            console.error('Authentication error:', error);
+            alert('Authentication failed: ' + error.message);
+          }
+        });
+      } else {
+        console.log('Sign in button not found');
+      }
+    });
+  </script>
+<% end %>

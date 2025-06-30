@@ -5,9 +5,13 @@ one:
   last_name: Smith
   email: jane.smith@example.com
   phone: 555-0001
+  webauthn_id: <%= SecureRandom.urlsafe_base64(32) %>
+  email_confirmed_at: <%= 1.day.ago %>
 
 two:
   first_name: Bob
   last_name: Johnson
   email: bob.johnson@example.com
   phone: 555-0002
+  webauthn_id: <%= SecureRandom.urlsafe_base64(32) %>
+  email_confirmed_at: <%= 1.day.ago %>

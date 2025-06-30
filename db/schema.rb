@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_23_011254) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_26_013312) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -19,11 +19,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_23_011254) do
   create_table "customers", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
-    t.string "email"
+    t.string "email", null: false
     t.string "phone"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_customers_on_email"
+    t.string "webauthn_id"
+    t.datetime "email_confirmed_at"
+    t.string "confirmation_token"
+    t.datetime "confirmation_sent_at"
+    t.string "session_token"
+    t.datetime "last_sign_in_at"
+    t.string "last_sign_in_ip"
+    t.integer "sign_in_count", default: 0, null: false
+    t.index ["confirmation_token"], name: "index_customers_on_confirmation_token", unique: true
+    t.index ["email"], name: "unique_customers_email", unique: true
+    t.index ["webauthn_id"], name: "index_customers_on_webauthn_id", unique: true
   end
 
   create_table "draws", force: :cascade do |t|
@@ -160,6 +170,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_23_011254) do
     t.index ["ticket_purchase_id"], name: "index_tickets_on_ticket_purchase_id"
   end
 
+  create_table "webauthn_credentials", force: :cascade do |t|
+    t.bigint "customer_id", null: false
+    t.string "external_id", null: false
+    t.text "public_key", null: false
+    t.integer "sign_count", default: 0, null: false
+    t.string "name"
+    t.string "nickname"
+    t.datetime "last_used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["customer_id"], name: "index_webauthn_credentials_on_customer_id"
+    t.index ["external_id"], name: "index_webauthn_credentials_on_external_id", unique: true
+  end
+
   add_foreign_key "draws", "raffles"
   add_foreign_key "licenses", "jurisdictions"
   add_foreign_key "licenses", "organizations"
@@ -174,4 +198,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_23_011254) do
   add_foreign_key "tickets", "draws"
   add_foreign_key "tickets", "pricing_tiers"
   add_foreign_key "tickets", "ticket_purchases"
+  add_foreign_key "webauthn_credentials", "customers"
 end
