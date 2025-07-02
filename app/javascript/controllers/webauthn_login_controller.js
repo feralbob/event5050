@@ -1,48 +1,25 @@
-import { Controller } from "@hotwired/stimulus"
+import WebAuthnBaseController from "controllers/webauthn_base_controller"
 
-export default class extends Controller {
-  static targets = ["prompt", "error", "errorText", "discoverableButton"]
+export default class extends WebAuthnBaseController {
+  static targets = [...WebAuthnBaseController.targets, "discoverableButton"]
 
-  connect() {
-    // Check if WebAuthn is available
-    if (!window.PublicKeyCredential) {
-      if (!window.isSecureContext) {
-        this.showError("Passwordless authentication requires HTTPS. Please access this site using https:// or from localhost.")
-        if (this.hasDiscoverableButtonTarget) this.discoverableButtonTarget.disabled = true
-      }
+  disableWebAuthnElements() {
+    if (this.hasDiscoverableButtonTarget) {
+      this.discoverableButtonTarget.disabled = true
     }
   }
 
   async signInWithDiscoverable() {
     console.log("signInWithDiscoverable called")
     
-    // Hide any previous errors
-    if (this.hasErrorTarget) {
-      this.errorTarget.classList.add("hidden")
-    }
-
-    try {
+    await this.handleWebAuthnOperation(async () => {
       // Get discoverable credentials options from server
-      const response = await fetch("/customers/session/discoverable", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to get authentication options")
-      }
-
-      const data = await response.json()
+      const data = await this.fetchJSON("/customers/session/discoverable", { method: "POST" })
       
       if (data.options) {
         // Hide button and show prompt
-        if (this.hasDiscoverableButtonTarget) {
-          this.discoverableButtonTarget.style.display = "none"
-        }
-        this.promptTarget.classList.remove("hidden")
+        this.hideDiscoverableButton()
+        this.showPrompt()
         
         // Use the native parsing method to convert from JSON
         const options = PublicKeyCredential.parseRequestOptionsFromJSON(data.options)
@@ -57,54 +34,31 @@ export default class extends Controller {
         const credentialJSON = credential.toJSON()
         
         // Send credential to server
-        const verifyResponse = await fetch("/customers/session/verify", {
+        const result = await this.fetchJSON("/customers/session/verify", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": this.getCSRFToken()
-          },
           body: JSON.stringify(credentialJSON)
         })
         
-        const result = await verifyResponse.json()
-        
-        if (verifyResponse.ok) {
-          window.location.href = result.redirect_url
-        } else {
-          this.showError(result.error || "Authentication failed")
-        }
+        window.location.href = result.redirect_url
       }
-    } catch (error) {
-      console.error("WebAuthn error:", error)
-      
-      let errorMessage = "Authentication failed. "
-      if (error.name === "NotAllowedError") {
-        errorMessage += "The operation was cancelled or timed out."
-      } else if (error.name === "SecurityError") {
-        errorMessage += "This operation requires a secure context (HTTPS)."
-      } else if (error.name === "InvalidStateError") {
-        errorMessage += "No credentials available for this device."
-      } else {
-        errorMessage += "Please try again or use email sign in."
-      }
-      
-      this.showError(errorMessage)
+    }, "Authentication")
+  }
+
+  hideDiscoverableButton() {
+    if (this.hasDiscoverableButtonTarget) {
+      this.discoverableButtonTarget.style.display = "none"
     }
   }
 
-
-  showError(message) {
-    this.errorTextTarget.textContent = message
-    this.errorTarget.classList.remove("hidden")
-    this.promptTarget.classList.add("hidden")
-    
-    // Show the button again if it was hidden
+  showDiscoverableButton() {
     if (this.hasDiscoverableButtonTarget) {
       this.discoverableButtonTarget.style.display = "block"
     }
   }
 
-  getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]').content
+
+  showError(message) {
+    super.showError(message)
+    this.showDiscoverableButton()
   }
 }
