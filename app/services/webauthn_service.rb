@@ -1,14 +1,13 @@
 class WebauthnService
   class << self
     def configuration
-      @configuration ||= begin
-        WebAuthn.configure do |config|
-          config.origin = Rails.application.config.webauthn_origin || request_origin
-          config.rp_name = Rails.application.config.webauthn_rp_name || "Event5050"
-          config.rp_id = Rails.application.config.webauthn_rp_id || request_host
-        end
-        WebAuthn.configuration
+      # Always reconfigure to ensure proper origin is set
+      WebAuthn.configure do |config|
+        config.origin = Rails.application.config.webauthn_origin
+        config.rp_name = Rails.application.config.webauthn_rp_name
+        config.rp_id = Rails.application.config.webauthn_rp_id
       end
+      WebAuthn.configuration
     end
 
     def generate_challenge
@@ -19,6 +18,9 @@ class WebauthnService
     end
 
     def credential_creation_options(customer)
+      # Ensure configuration is loaded
+      configuration
+      
       WebAuthn::Credential.options_for_create(
         user: {
           id: customer.webauthn_id,
@@ -38,6 +40,9 @@ class WebauthnService
     end
 
     def credential_request_options(customer = nil)
+      # Ensure configuration is loaded
+      configuration
+      
       options = {
         allow: customer&.credentials_for_get || [],
         user_verification: "preferred"
@@ -47,6 +52,9 @@ class WebauthnService
     end
 
     def verify_registration(customer, params)
+      # Ensure configuration is loaded
+      configuration
+      
       webauthn_credential = WebAuthn::Credential.from_create(params)
 
       webauthn_credential.verify(params[:challenge])
@@ -55,6 +63,9 @@ class WebauthnService
     end
 
     def verify_authentication(params, challenge)
+      # Ensure configuration is loaded
+      configuration
+      
       webauthn_credential = WebAuthn::Credential.from_get(params)
 
       # Find the customer by credential

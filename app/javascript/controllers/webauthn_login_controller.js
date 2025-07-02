@@ -1,36 +1,56 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["email", "submit", "prompt", "error", "errorText"]
+  static targets = ["prompt", "error", "errorText", "discoverableButton"]
 
   connect() {
-    this.element.addEventListener("ajax:success", this.handleSuccess.bind(this))
-    this.element.addEventListener("ajax:error", this.handleError.bind(this))
-    
     // Check if WebAuthn is available
     if (!window.PublicKeyCredential) {
       if (!window.isSecureContext) {
         this.showError("Passwordless authentication requires HTTPS. Please access this site using https:// or from localhost.")
-        this.submitTarget.disabled = true
+        if (this.hasDiscoverableButtonTarget) this.discoverableButtonTarget.disabled = true
       }
     }
   }
 
-  async handleSuccess(event) {
-    const response = event.detail[0]
+  async signInWithDiscoverable() {
+    console.log("signInWithDiscoverable called")
     
-    if (response.options) {
-      // Hide form and show prompt
-      this.element.style.display = "none"
-      this.promptTarget.classList.remove("hidden")
+    // Hide any previous errors
+    if (this.hasErrorTarget) {
+      this.errorTarget.classList.add("hidden")
+    }
+
+    try {
+      // Get discoverable credentials options from server
+      const response = await fetch("/customers/session/discoverable", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": this.getCSRFToken()
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to get authentication options")
+      }
+
+      const data = await response.json()
       
-      try {
-        // Use the native parsing method to convert from JSON
-        const options = PublicKeyCredential.parseRequestOptionsFromJSON(response.options)
+      if (data.options) {
+        // Hide button and show prompt
+        if (this.hasDiscoverableButtonTarget) {
+          this.discoverableButtonTarget.style.display = "none"
+        }
+        this.promptTarget.classList.remove("hidden")
         
-        // Get credential
+        // Use the native parsing method to convert from JSON
+        const options = PublicKeyCredential.parseRequestOptionsFromJSON(data.options)
+        
+        // Get credential with empty allow list for discoverable credentials
         const credential = await navigator.credentials.get({
-          publicKey: options
+          publicKey: options,
+          mediation: "optional" // This shows the browser's credential picker UI
         })
         
         // Convert credential to JSON format for sending to server
@@ -53,34 +73,35 @@ export default class extends Controller {
         } else {
           this.showError(result.error || "Authentication failed")
         }
-      } catch (error) {
-        console.error("WebAuthn error:", error)
-        
-        let errorMessage = "Authentication failed. "
-        if (error.name === "NotAllowedError") {
-          errorMessage += "The operation was cancelled or timed out."
-        } else if (error.name === "SecurityError") {
-          errorMessage += "This operation requires a secure context (HTTPS)."
-        } else {
-          errorMessage += "Please try again."
-        }
-        
-        this.showError(errorMessage)
       }
+    } catch (error) {
+      console.error("WebAuthn error:", error)
+      
+      let errorMessage = "Authentication failed. "
+      if (error.name === "NotAllowedError") {
+        errorMessage += "The operation was cancelled or timed out."
+      } else if (error.name === "SecurityError") {
+        errorMessage += "This operation requires a secure context (HTTPS)."
+      } else if (error.name === "InvalidStateError") {
+        errorMessage += "No credentials available for this device."
+      } else {
+        errorMessage += "Please try again or use email sign in."
+      }
+      
+      this.showError(errorMessage)
     }
   }
 
-  handleError(event) {
-    const response = event.detail[0]
-    const error = response.error || "An error occurred. Please try again."
-    this.showError(error)
-  }
 
   showError(message) {
     this.errorTextTarget.textContent = message
     this.errorTarget.classList.remove("hidden")
     this.promptTarget.classList.add("hidden")
-    this.element.style.display = "block"
+    
+    // Show the button again if it was hidden
+    if (this.hasDiscoverableButtonTarget) {
+      this.discoverableButtonTarget.style.display = "block"
+    }
   }
 
   getCSRFToken() {

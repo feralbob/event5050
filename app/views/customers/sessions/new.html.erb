@@ -3,47 +3,42 @@
     <div class="card-body">
       <h2 class="card-title text-2xl font-bold text-center mb-6">Sign In</h2>
       
-      <div id="sign-in-form">
-        <%= form_with(scope: :session, url: customers_session_path, 
-                      local: false, data: { controller: "webauthn-login" }) do |form| %>
-          <div class="form-control mb-6">
-            <%= form.label :email, class: "label" %>
-            <%= form.email_field :email, 
-                class: "input input-bordered w-full", 
-                placeholder: "john@example.com",
-                required: true,
-                data: { webauthn_login_target: "email" } %>
-          </div>
+      <div data-controller="webauthn-login">
+        <div id="sign-in-form">
+          <button type="button" 
+                  class="btn btn-primary w-full btn-lg"
+                  data-action="click->webauthn-login#signInWithDiscoverable"
+                  data-webauthn-login-target="discoverableButton">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a7.464 7.464 0 01-1.15 3.993m1.989 3.559A11.209 11.209 0 008.25 10.5a3.75 3.75 0 117.5 0c0 .527-.021 1.049-.064 1.565M12 10.5a14.94 14.94 0 01-3.6 9.75m6.633-4.596a18.666 18.666 0 01-2.485 5.33" />
+            </svg>
+            Sign in with passkey
+          </button>
 
-          <div class="form-control">
-            <%= form.submit "Continue", 
-                class: "btn btn-primary w-full",
-                data: { webauthn_login_target: "submit" } %>
-          </div>
-        <% end %>
-      </div>
+          <p class="text-center text-sm text-base-content/70 mt-4">
+            Use your device's biometric authentication or security key
+          </p>
+        </div>
 
-      <div id="webauthn-prompt" class="hidden" data-webauthn-login-target="prompt">
-        <div class="text-center">
-          <div class="loading loading-spinner loading-lg text-primary mb-4"></div>
-          <p class="text-lg font-semibold mb-2">Authenticating...</p>
-          <p class="text-base-content/70">Please use your security key or biometric authentication.</p>
+        <div id="webauthn-prompt" class="hidden" data-webauthn-login-target="prompt">
+          <div class="text-center">
+            <div class="loading loading-spinner loading-lg text-primary mb-4"></div>
+            <p class="text-lg font-semibold mb-2">Authenticating...</p>
+            <p class="text-base-content/70">Please use your security key or biometric authentication.</p>
+          </div>
+        </div>
+
+        <div id="error-message" class="hidden alert alert-error mt-4" data-webauthn-login-target="error">
+          <span data-webauthn-login-target="errorText"></span>
         </div>
       </div>
 
-      <div id="error-message" class="hidden alert alert-error mt-4" data-webauthn-login-target="error">
-        <span data-webauthn-login-target="errorText"></span>
-      </div>
+      <div class="divider mt-8">Need an account?</div>
 
-      <div class="divider">OR</div>
-
-      <div class="text-center space-y-2">
+      <div class="text-center">
         <p class="text-sm">
           Don't have an account?
           <%= link_to "Create account", new_customers_registration_path, class: "link link-primary" %>
-        </p>
-        <p class="text-sm">
-          <%= link_to "Resend confirmation email", new_customers_confirmation_path, class: "link link-secondary" %>
         </p>
       </div>
     </div>

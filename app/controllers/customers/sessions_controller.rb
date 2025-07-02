@@ -7,28 +7,9 @@ class Customers::SessionsController < ApplicationController
   end
 
   def create
-    @customer = Customer.confirmed.find_by(email: params.dig(:session, :email)&.downcase)
-
-    if @customer
-      if @customer.webauthn_enabled?
-        # Generate WebAuthn challenge
-        options = WebauthnService.credential_request_options(@customer)
-        session[:webauthn_challenge] = options.challenge
-        session[:attempting_customer_id] = @customer.id
-
-        render json: {
-          options: options.as_json
-        }
-      else
-        # No credentials yet, redirect to setup
-        session[:pending_credential_setup] = @customer.id
-        redirect_to new_customers_credential_path,
-                    alert: "Please set up your security key to continue."
-      end
-    else
-      render json: { error: "Invalid email or account not found" },
-             status: :unprocessable_entity
-    end
+    # Redirect to new session path since we only support discoverable credentials
+    redirect_to new_customers_session_path,
+                alert: "Please use the 'Sign in with passkey' button to authenticate."
   end
 
   def discoverable
