@@ -3,7 +3,7 @@ class WebauthnService
     def configuration
       # Always reconfigure to ensure proper origin is set
       WebAuthn.configure do |config|
-        config.origin = Rails.application.config.webauthn_origin
+        config.allowed_origins = [ Rails.application.config.webauthn_origin ]
         config.rp_name = Rails.application.config.webauthn_rp_name
         config.rp_id = Rails.application.config.webauthn_rp_id
       end
@@ -69,7 +69,13 @@ class WebauthnService
       webauthn_credential = WebAuthn::Credential.from_get(params)
 
       # Find the customer by credential
-      credential = WebauthnCredential.find_by!(external_id: params[:id])
+      credential = WebauthnCredential.find_by(external_id: params[:id])
+
+      unless credential
+        Rails.logger.info "Credential not found: #{params[:id]}"
+        return [ nil, nil ]
+      end
+
       customer = credential.customer
 
       # Verify the assertion

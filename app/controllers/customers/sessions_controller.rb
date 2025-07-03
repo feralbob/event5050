@@ -16,7 +16,7 @@ class Customers::SessionsController < ApplicationController
     # Generate WebAuthn challenge for discoverable credentials (no customer needed)
     options = WebauthnService.credential_request_options
     session[:webauthn_challenge] = options.challenge
-    
+
     render json: {
       options: options.as_json
     }
@@ -46,11 +46,16 @@ class Customers::SessionsController < ApplicationController
 
         render json: { redirect_url: redirect_url_after_sign_in }
       else
-        render json: { error: "Authentication failed" }, status: :unprocessable_entity
+        render json: { error: "This security key is not registered with any account. Please sign up first or use a registered key." },
+               status: :unprocessable_entity
       end
     rescue WebAuthn::Error => e
       Rails.logger.error "WebAuthn verification error: #{e.message}"
       render json: { error: "Authentication failed: #{e.message}" },
+             status: :unprocessable_entity
+    rescue ActiveRecord::RecordNotFound => e
+      Rails.logger.info "Credential not found: #{e.message}"
+      render json: { error: "This security key is not registered with your account. Please sign up or use a registered key." },
              status: :unprocessable_entity
     end
   end
