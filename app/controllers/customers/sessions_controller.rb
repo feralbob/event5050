@@ -44,6 +44,9 @@ class Customers::SessionsController < ApplicationController
         sign_in_customer(customer)
         customer.update_credential_after_authentication(webauthn_credential)
 
+        # Mark authentication time for reauthentication purposes
+        session[:last_auth_at] = Time.current.to_s
+
         render json: { redirect_url: redirect_url_after_sign_in }
       else
         render json: { error: "This security key is not registered with any account. Please sign up first or use a registered key." },

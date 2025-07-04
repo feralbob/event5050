@@ -33,8 +33,9 @@ class WebauthnService
         },
         exclude: customer.credentials_for_get,
         authenticator_selection: {
-          authenticator_attachment: "platform",
-          user_verification: "preferred"
+          user_verification: "preferred",
+          resident_key: "preferred",
+          require_resident_key: false
         }
       )
     end

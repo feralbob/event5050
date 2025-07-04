@@ -1,6 +1,6 @@
 class Customers::CredentialsController < Customers::BaseController
-  skip_before_action :authenticate_customer!, only: [ :new, :create, :verify ]
-  before_action :require_pending_setup, only: [ :new ]
+  skip_before_action :authenticate_customer!, only: [ :new, :create, :verify ], if: :initial_setup?
+  before_action :require_recent_authentication!, only: [ :new, :create, :destroy ], unless: :initial_setup?
   before_action :set_credential, only: [ :destroy ]
 
   def index
@@ -8,7 +8,11 @@ class Customers::CredentialsController < Customers::BaseController
   end
 
   def new
-    @customer = Customer.find(session[:pending_credential_setup])
+    if initial_setup?
+      @customer = Customer.find(session[:pending_credential_setup])
+    else
+      @customer = current_customer
+    end
   end
 
   def create
@@ -80,12 +84,6 @@ class Customers::CredentialsController < Customers::BaseController
 
   private
 
-  def require_pending_setup
-    unless session[:pending_credential_setup]
-      redirect_to customers_credentials_path
-    end
-  end
-
   def find_customer_for_credential_creation
     if session[:pending_credential_setup]
       Customer.find_by(id: session[:pending_credential_setup])
@@ -103,5 +101,17 @@ class Customers::CredentialsController < Customers::BaseController
     params.permit(:id, :rawId, :type, :authenticatorAttachment, :nickname,
                   clientExtensionResults: {},
                   response: [ :clientDataJSON, :attestationObject, :authenticatorData, :signature, :userHandle, :publicKey, :publicKeyAlgorithm, { transports: [] } ])
+  end
+
+  def initial_setup?
+    session[:pending_credential_setup].present?
+  end
+
+  def require_recent_authentication!
+    # Check if user has authenticated recently (within last 5 minutes)
+    if session[:last_auth_at].nil? || Time.current - Time.parse(session[:last_auth_at]) > 5.minutes
+      session[:return_to] = request.fullpath
+      redirect_to new_customers_reauthentication_path, alert: "Please verify your identity to continue."
+    end
   end
 end
