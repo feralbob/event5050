@@ -1,13 +1,25 @@
 class Customers::ConfirmationsController < ApplicationController
-  before_action :require_no_authentication, only: [ :show ]
+  # Allow signed-in users to confirm their email
   def show
     customer = Customer.find_by(confirmation_token: params[:token])
 
     if customer && !customer.confirmed?
       customer.confirm!
-      session[:pending_credential_setup] = customer.id
-      redirect_to new_customers_credential_path,
-                  notice: "Your email has been confirmed. Please set up your security key."
+      
+      if customer_signed_in? && current_customer.id == customer.id
+        # User is already signed in, just update their status
+        redirect_to root_path,
+                    notice: "Your email has been confirmed successfully!"
+      elsif customer.webauthn_credentials.exists?
+        # User has credentials, redirect to sign in
+        redirect_to new_customers_session_path,
+                    notice: "Your email has been confirmed. Please sign in to continue."
+      else
+        # User needs to set up credentials
+        session[:pending_credential_setup] = customer.id
+        redirect_to new_customers_credential_path,
+                    notice: "Your email has been confirmed. Please set up your security key."
+      end
     else
       redirect_to new_customers_session_path,
                   alert: "Invalid or expired confirmation link."

@@ -1,4 +1,5 @@
 class TicketPurchasesController < ApplicationController
+  before_action :require_verified_email!, if: :customer_signed_in?
   before_action :set_draw, only: [ :show, :create ]
 
   def index

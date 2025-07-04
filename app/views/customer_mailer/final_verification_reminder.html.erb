@@ -1,0 +1,22 @@
+<p>Hi <%= @customer.first_name %>,</p>
+
+<p><strong>This is your final reminder!</strong></p>
+
+<p>Your Event5050 account is still unverified. To ensure you can participate in our raffles and access all features, please verify your email address now.</p>
+
+<p><%= link_to "Verify Email Address Now", @confirmation_url, class: "btn btn-primary" %></p>
+
+<p>Or copy and paste this link into your browser:<br>
+<%= @confirmation_url %></p>
+
+<p>Without email verification, you won't be able to:</p>
+<ul>
+  <li>Purchase raffle tickets</li>
+  <li>Receive winning notifications</li>
+  <li>Access prize claims</li>
+</ul>
+
+<p>If you didn't create an account with Event5050, please ignore this email.</p>
+
+<p>Best regards,<br>
+The Event5050 Team</p>

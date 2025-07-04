@@ -11,7 +11,14 @@ class Customers::RegistrationsController < ApplicationController
     if @customer.save
       @customer.generate_confirmation_token!
       CustomerMailer.confirmation_instructions(@customer).deliver_later
-      redirect_to pending_customers_registrations_path
+      
+      # Sign in the customer immediately
+      session[:customer_id] = @customer.id
+      session[:pending_credential_setup] = @customer.id
+      
+      # Redirect to security key setup
+      redirect_to new_customers_credential_path,
+                  notice: "Welcome! Please set up your security key. We've sent a confirmation email to #{@customer.email}."
     else
       render :new, status: :unprocessable_entity
     end

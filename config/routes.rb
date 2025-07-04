@@ -37,11 +37,10 @@ Rails.application.routes.draw do
       post :discoverable
     end
 
-    resources :confirmations, only: [ :new, :create ] do
-      collection do
-        get ":token", action: :show, as: ""
-      end
-    end
+    # Email confirmation routes
+    get "confirm/:token", to: "confirmations#show", as: :confirm_email
+    post "resend_confirmation", to: "confirmations#create", as: :resend_email_confirmation
+    get "resend_confirmation/new", to: "confirmations#new", as: :new_email_confirmation
 
     resources :credentials, only: [ :index, :new, :create, :destroy ] do
       collection do

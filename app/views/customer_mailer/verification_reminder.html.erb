@@ -1,0 +1,13 @@
+<p>Hi <%= @customer.first_name %>,</p>
+
+<p>We noticed you haven't verified your email address yet. To access all features of Event5050, including purchasing raffle tickets, please confirm your email address.</p>
+
+<p><%= link_to "Verify Email Address", @confirmation_url, class: "btn btn-primary" %></p>
+
+<p>Or copy and paste this link into your browser:<br>
+<%= @confirmation_url %></p>
+
+<p>If you didn't create an account with Event5050, please ignore this email.</p>
+
+<p>Best regards,<br>
+The Event5050 Team</p>

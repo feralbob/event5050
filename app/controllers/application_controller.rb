@@ -34,9 +34,20 @@ class ApplicationController < ActionController::Base
   def find_customer_from_session
     return nil unless session[:customer_id]
 
-    Customer.confirmed.find_by(id: session[:customer_id])
+    Customer.find_by(id: session[:customer_id])
   rescue ActiveRecord::RecordNotFound
     session.delete(:customer_id)
     nil
+  end
+  
+  def email_verified?
+    customer_signed_in? && current_customer.confirmed?
+  end
+  helper_method :email_verified?
+  
+  def require_verified_email!
+    unless email_verified?
+      redirect_to root_path, alert: "Please verify your email address to continue. Check your inbox for the confirmation email."
+    end
   end
 end

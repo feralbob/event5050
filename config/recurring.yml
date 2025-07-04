@@ -1,10 +1,13 @@
-# production:
-#   periodic_cleanup:
-#     class: CleanSoftDeletedRecordsJob
-#     queue: background
-#     args: [ 1000, { batch_size: 500 } ]
-#     schedule: every hour
-#   periodic_command:
-#     command: "SoftDeletedRecord.due.delete_all"
-#     priority: 2
-#     schedule: at 5am every day
+production:
+  email_verification_reminders:
+    class: EmailVerificationReminderJob
+    queue: default
+    schedule: at 10am every day
+    description: "Send email verification reminders to unconfirmed users"
+
+development:
+  email_verification_reminders:
+    class: EmailVerificationReminderJob
+    queue: default
+    schedule: every 30 minutes
+    description: "Send email verification reminders to unconfirmed users (frequent for testing)"
